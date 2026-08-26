@@ -66,9 +66,3 @@ const handleForm = async (e) => {
              
 <button type="submit" disabled={loading} className="bg-yellow-600 mx-32 py-2 rounded-2xl shadow-[4px_10px_19px_#000]">{loading?"submitting..":"submit"}</button>
 <div className="flex justify-center"><p>Already Have account? </p>
-<Link href={"/login"}><span className="text-amber-500 decoration-2 decoration-amber-600 underline">Login now</span></Link> 
-</div>
-</form>
-        </div>
-    )
-}
