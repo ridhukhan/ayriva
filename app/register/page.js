@@ -21,26 +21,27 @@ const handleForm = async (e) => {
       body: JSON.stringify({ username, email, password }),
     });
 
-    // ব্যাকএন্ড থেকে পাঠানো Response ডাটা ধরুন
     const data = await res.json();
 
     if (!res.ok) {
-      // ব্যাকএন্ডের পাঠানো আসল মেসেজ Alert-এ দেখাবে
-      alert(data.message || "Something went wrong");
+      alert(data.message || "Registration failed");
       setLoading(false);
       return;
     }
 
-    alert(data.message || "Registration successful");
+    // Success Block
+    alert(data.message || "User created successfully!");
     setLoading(false);
     router.push("/login");
+    
   } catch (error) {
-    alert("Network error. Please try again.");
+    console.error("Fetch Error:", error);
+    // যদি catch ব্লক ফায়ার করে তবে আসল error message কনসোলে দেখাবে
+    alert("Network error: " + error.message);
     setLoading(false);
   }
 };
-
-    return(
+ return(
 
         <div className="justify-center bg-amber-50 h-screen w-full items-center text-center">
 
