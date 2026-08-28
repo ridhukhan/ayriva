@@ -1,12 +1,13 @@
 "use client"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { toast } from "sonner"
 export default function Login(){
 const [email,setEmail]=useState("")
 const [password,setPassword]=useState("")
 const [loading,setLoading]=useState(false)
-
+const router =useRouter()
 const handleform =async (e)=>{
     e.preventDefault()
     try {
