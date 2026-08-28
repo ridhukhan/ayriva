@@ -2,19 +2,7 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-<<<<<<< HEAD
 import { toast } from "sonner"
-export default function Register(){
-const [username,setUsername]=useState("")
-const [email,setEmail]=useState("")
-const [password,setPassword]=useState("")
-const [loading,setLoading] = useState(false)
-const router=useRouter()
-const handleForm = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-=======
->>>>>>> 5ee16f25bfccee7e9567a94aefd3292a2117b16d
 
 export default function Register() {
   const [username, setUsername] = useState("")
@@ -27,24 +15,6 @@ export default function Register() {
     e.preventDefault()
     setLoading(true)
 
-<<<<<<< HEAD
-    if (!res.ok) {
-      toast.error(data.message || "Registration failed");
-      setLoading(false);
-      return;
-    }
-
-    // Success Block
-    toast.success(data.message || "User created successfully!");
-    setLoading(false);
-    router.push("/login");
-    
-  } catch (error) {
-    console.error("Fetch Error:", error);
-    // যদি catch ব্লক ফায়ার করে তবে আসল error message কনসোলে দেখাবে
-    toast.eror("Network error: " + error.message);
-    setLoading(false);
-=======
     try {
       const res = await fetch("/api/register", {
         method: "POST",
@@ -57,20 +27,20 @@ export default function Register() {
       const data = await res.json()
 
       if (!res.ok) {
-        alert(data.message || "Registration failed")
+        toast.error(data.message || "Registration failed")
         setLoading(false)
         return
       }
 
-      alert(data.message || "User created successfully!")
+      // Success Toast
+      toast.success(data.message || "User created successfully!")
       setLoading(false)
       router.push("/login")
     } catch (error) {
       console.error("Fetch Error:", error)
-      alert("Network error: " + error.message)
+      toast.error("Network error: " + error.message)
       setLoading(false)
     }
->>>>>>> 5ee16f25bfccee7e9567a94aefd3292a2117b16d
   }
 
   return (
@@ -88,7 +58,7 @@ export default function Register() {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           placeholder="enter ur name"
-          className="bg-white w-full py-2 px-4 rounded-xl text-center border-4 font-bold border-amber-600 focus:outline-none"
+          className="bg-white w-full py-2 px-4 rounded-xl text-center border-4 font-bold border-amber-600 focus:outline-none text-black"
           required
         />
         <input
@@ -96,7 +66,7 @@ export default function Register() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="enter ur Email"
-          className="bg-white w-full py-2 px-4 rounded-xl text-center border-4 font-bold border-amber-600 focus:outline-none"
+          className="bg-white w-full py-2 px-4 rounded-xl text-center border-4 font-bold border-amber-600 focus:outline-none text-black"
           required
         />
         <input
@@ -104,14 +74,14 @@ export default function Register() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="enter ur Password"
-          className="bg-white w-full py-2 px-4 rounded-xl text-center border-4 font-bold border-amber-600 focus:outline-none"
+          className="bg-white w-full py-2 px-4 rounded-xl text-center border-4 font-bold border-amber-600 focus:outline-none text-black"
           required
         />
 
         <button
           type="submit"
           disabled={loading}
-          className="bg-yellow-600 hover:bg-yellow-500 text-amber-950 font-bold w-full py-2.5 rounded-xl shadow-[4px_10px_19px_#000] transition active:scale-95 disabled:opacity-50 mt-2"
+          className="bg-yellow-600 hover:bg-yellow-500 text-amber-950 font-bold w-full py-2.5 rounded-xl shadow-[4px_10px_19px_#000] transition active:scale-95 disabled:opacity-50 mt-2 cursor-pointer"
         >
           {loading ? "Submitting..." : "Submit"}
         </button>
