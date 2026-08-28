@@ -2,6 +2,7 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { toast } from "sonner"
 export default function Register(){
 const [username,setUsername]=useState("")
 const [email,setEmail]=useState("")
@@ -24,20 +25,20 @@ const handleForm = async (e) => {
     const data = await res.json();
 
     if (!res.ok) {
-      alert(data.message || "Registration failed");
+      toast.error(data.message || "Registration failed");
       setLoading(false);
       return;
     }
 
     // Success Block
-    alert(data.message || "User created successfully!");
+    toast.success(data.message || "User created successfully!");
     setLoading(false);
     router.push("/login");
     
   } catch (error) {
     console.error("Fetch Error:", error);
     // যদি catch ব্লক ফায়ার করে তবে আসল error message কনসোলে দেখাবে
-    alert("Network error: " + error.message);
+    toast.eror("Network error: " + error.message);
     setLoading(false);
   }
 };
