@@ -3,7 +3,7 @@ export default function Login(){
 
     return(
 
-        <div className="justify-center bg-amber-50 h-screen w-full items-center text-center">
+        <div className="min-h-screen w-full bg-amber-50 flex flex-col justify-center items-center p-4">
 
            <h1 className="text-5xl font-extrabold mt-5">Login plz</h1>
 
