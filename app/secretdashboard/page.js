@@ -23,9 +23,9 @@ async function checkAdmin(){
    checkAdmin()
 },[])
 if(loading){
-<div className="bg-fuchsia-800 font-bold text-3xl text-white">
+   return(<div className="bg-fuchsia-800 font-bold text-3xl text-white">
     <h1>security checking......</h1>
-</div>
+</div>)
 }
 if(!isadmin)return;
     return(
