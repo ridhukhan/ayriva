@@ -1,4 +1,5 @@
 import Link from "next/link";
+import HeroSlider from "./components/hero";
 export default function Home() {
   return (
     <div className="bg-amber-50 h-screen justify-center  w-full">
@@ -16,6 +17,10 @@ src="https://res.cloudinary.com/dfzaefrkt/image/upload/v1787719042/IMG_20260826_
   rounded-3xl shadow-[3px_7px_15px_#000]">Login</button></Link>
 </div>
       </nav>
+      <section>
+
+        <HeroSlider/>
+      </section>
     </div>
   );
 }
