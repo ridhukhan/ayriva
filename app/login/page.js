@@ -7,8 +7,7 @@ export default function Login(){
 
            <h1 className="text-5xl font-extrabold mt-5">Login plz</h1>
 
-            <form className="bg-amber-950 h-100 mx-35 rounded-2xl flex flex-col 
-            justify-center gap-5 mt-17">
+            <form className="bg-amber-950 w-full max-w-md p-6 sm:p-8 rounded-2xl flex flex-col justify-center gap-4 shadow-2xl">
              <input type="email" placeholder="enter ur Email" className="bg-white mx-16 py-2 rounded-2xl text-center border-4 font-bold border-solid border-amber-600"/>
              <input type="password" placeholder="enter ur Password" className="bg-white mx-16 py-2 rounded-2xl text-center border-4 font-bold border-solid border-amber-600"/>
 
