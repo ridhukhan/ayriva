@@ -41,7 +41,7 @@ export default function ProductDetailsPage({ params }) {
         }
       } catch (error) {
         toast.error("Failed to load product details.");
-      } font-bold {
+      } finally {
         setLoading(false);
       }
     }
