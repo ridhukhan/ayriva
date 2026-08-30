@@ -1,2 +1,8 @@
 @import "tailwindcss";
 
+/* Netlify footer badge hide */
+[alt*="Netlify"],
+[href*="netlify.com"],
+.netlify-badge {
+  display: none !important;
+}
