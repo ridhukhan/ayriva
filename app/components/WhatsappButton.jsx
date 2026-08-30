@@ -1,7 +1,7 @@
 "use client";
 
 export default function WhatsAppButton() {
-  const phoneNumber = "01621379527"; // আপনার হোয়াটসঅ্যাপ নম্বর
+  const phoneNumber = "8801621379527"; // আপনার হোয়াটসঅ্যাপ নম্বর
   const message = encodeURIComponent("Hello! I would like to know more about your products."); // ডিফোল্ট মেসেজ
 
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
@@ -11,7 +11,7 @@ export default function WhatsAppButton() {
       href={whatsappUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-5 right-5 z-[1000] flex items-center justify-center w-14 h-14 bg-[#25D366] text-white rounded-full shadow-2xl hover:scale-110 hover:bg-[#20ba5a] transition-all duration-300 group"
+      className="fixed bottom-10 right-5 z-[1000] flex items-center justify-center w-14 h-14 bg-[#25D366] text-white rounded-full shadow-2xl hover:scale-110 hover:bg-[#20ba5a] transition-all duration-300 group"
       title="Chat on WhatsApp"
     >
       {/* 🟢 Pulse Animation Effect */}
