@@ -1,30 +1,30 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { headers } from "next/headers";
 
-// Server-side ISR Fetching Function
-async function getSkincareProducts() {
-  try {
-    // Next.js Server Component-এ Absolute URL পাওয়ার জন্য
-    const headersList = await headers();
-    const host = headersList.get("host");
-    const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
-    const baseUrl = `${protocol}://${host}`;
+export default function SkincarePage() {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-    const res = await fetch(`${baseUrl}/api/products?category=skincare`, {
-      next: { revalidate: 10 }, // ⚡ ১০ সেকেন্ড ক্যাশিং (ISR)
-    });
+  useEffect(() => {
+    async function fetchProducts() {
+      try {
+        const res = await fetch("/api/products?category=skincare");
+        const data = await res.json();
 
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data?.success ? data.products : [];
-  } catch (error) {
-    console.error("Failed to fetch skincare products:", error);
-    return [];
-  }
-}
+        if (data?.success && Array.isArray(data?.products)) {
+          setProducts(data.products);
+        }
+      } catch (error) {
+        console.error("Failed to fetch skincare products:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
 
-export default async function SkincarePage() {
-  const products = await getSkincareProducts();
+    fetchProducts();
+  }, []);
 
   return (
     <div className="bg-white min-h-screen p-6 md:p-12 relative">
@@ -39,8 +39,14 @@ export default async function SkincarePage() {
         Skincare Collection
       </h1>
 
-      {products.length === 0 ? (
-        <p className="text-center text-gray-500 font-semibold">
+      {loading ? (
+        <div className="flex justify-center items-center py-20">
+          <h2 className="text-xl font-bold text-amber-950 animate-pulse">
+            Loading Skincare Products...
+          </h2>
+        </div>
+      ) : products.length === 0 ? (
+        <p className="text-center text-gray-500 font-semibold py-20">
           No products found. Please upload from Dashboard!
         </p>
       ) : (
@@ -53,7 +59,7 @@ export default async function SkincarePage() {
               <Link
                 key={item._id}
                 href={`/skincare/${item._id}`}
-                className="border border-[#D4AF37] shadow-black shadow-lg rounded-xl p-4 flex flex-col justify-between bg-white cursor-pointer block"
+                className="border border-[#D4AF37] shadow-black shadow-lg rounded-xl p-4 flex flex-col justify-between bg-white cursor-pointer block hover:scale-[1.01] transition-transform"
               >
                 <div>
                   {/* ১. মেইন ইমেজ */}

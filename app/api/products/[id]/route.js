@@ -1,19 +1,34 @@
 import { NextResponse } from "next/server";
-import { dbConnect } from "@/lib/mongodb";
+import connectDB from "@/lib/db";
 import Product from "@/models/Product";
 
-export async function GET(req, { params }) {
+export async function GET(request, { params }) {
   try {
-    await dbConnect();
+    await connectDB();
     const { id } = await params;
-    const product = await Product.findById(id);
+
+    const product = await Product.findById(id).lean();
 
     if (!product) {
-      return NextResponse.json({ success: false, message: "Product not found" }, { status: 404 });
+      return NextResponse.json(
+        { success: false, message: "Product not found" },
+        { status: 404 }
+      );
     }
 
-    return NextResponse.json({ success: true, product }, { status: 200 });
+    // ⚡ ক্যাশিং হেডার: ৬০ সেকেন্ড ক্যাশ থাকবে, ডাটাবেজে চাপ পড়বে না
+    return NextResponse.json(
+      { success: true, product },
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120",
+        },
+      }
+    );
   } catch (error) {
-    return NextResponse.json({ success: false, message: "Invalid ID" }, { status: 400 });
+    return NextResponse.json(
+      { success: false, message: "Server error" },
+      { status: 500 }
+    );
   }
 }
