@@ -125,7 +125,6 @@ export default function ProductDetailsPage({ params }) {
     <div className="min-h-screen bg-white text-black p-4 md:p-10 flex justify-center items-center">
       <div className="max-w-2xl w-full border border-[#D4AF37] shadow-black shadow-xl rounded-2xl p-6 md:p-8 bg-white flex flex-col gap-6">
         
-        {/* 1. Main Display Image */}
         <div className="w-full h-80 rounded-xl overflow-hidden border border-gray-200">
           <img
             src={activeImg}

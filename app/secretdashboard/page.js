@@ -169,6 +169,8 @@ export default function SecretDashboard() {
             >
               <option value="skincare">/skincare</option>
               <option value="bodycare">/bodycare</option>
+              <option value="haircare">/haircare</option>
+
             </select>
           </div>
 
