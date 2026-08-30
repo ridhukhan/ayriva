@@ -138,7 +138,6 @@ export default function ProductDetailPage({ params }) {
           />
         </div>
 
-        {/* 🖼️ Sub Images / Gallery Thumbnails */}
         {allImages.length > 1 && (
           <div className="flex gap-3 mb-6 overflow-x-auto pb-2">
             {allImages.map((imgUrl, index) => (

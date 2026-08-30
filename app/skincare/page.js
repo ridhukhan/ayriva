@@ -26,6 +26,32 @@ export default function SkincarePage() {
     fetchProducts();
   }, []);
 
+  // 🗑️ প্রোডাক্ট ডিলিট করার হ্যান্ডলার
+  const handleDelete = async (e, id) => {
+    e.preventDefault(); // লিঙ্ক রিডাইরেক্ট বন্ধ করবে
+    e.stopPropagation(); // কার্ডের ক্লিক ইভেন্ট থামাবে
+
+    if (!confirm("Are you sure you want to delete this product?")) return;
+
+    try {
+      const res = await fetch(`/api/products/${id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        // স্টেট থেকে মুছে দেওয়া প্রোডাক্ট ফিল্টার করে বাদ দেওয়া
+        setProducts((prev) => prev.filter((item) => item._id !== id));
+        alert("Product deleted successfully!");
+      } else {
+        alert(data.message || "Failed to delete product.");
+      }
+    } catch (error) {
+      console.error("Delete error:", error);
+      alert("Error deleting product.");
+    }
+  };
+
   return (
     <div className="bg-white min-h-screen p-6 md:p-12 relative">
       {/* Top Left Fixed/Absolute Go Back Button */}
@@ -59,16 +85,44 @@ export default function SkincarePage() {
               <Link
                 key={item._id}
                 href={`/skincare/${item._id}`}
-                className="border border-[#D4AF37] shadow-black shadow-lg rounded-xl p-4 flex flex-col justify-between bg-white cursor-pointer block hover:scale-[1.01] transition-transform"
+                className="border border-[#D4AF37] shadow-black shadow-lg rounded-xl p-4 flex flex-col justify-between bg-white cursor-pointer block hover:scale-[1.01] transition-transform relative group"
               >
                 <div>
                   {/* ১. মেইন ইমেজ */}
-                  <div className="w-full h-48 mb-4 rounded-lg overflow-hidden bg-gray-100">
+                  <div className="w-full h-48 mb-4 rounded-lg overflow-hidden bg-gray-100 relative">
                     <img
                       src={item.mainImage}
                       alt={item.title}
                       className="w-full h-full object-cover"
                     />
+
+                    {/* ✏️ 🗑️ Top-Right Action Buttons (Edit & Delete) */}
+                    <div className="absolute top-2 right-2 flex gap-2 z-10">
+                      {/* Edit Button */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          // এডিটের জন্য ড্যাশবোর্ড বা এডিট রাউটে রিডাইরেক্ট
+                          window.location.href = `/dashboard/edit-product/${item._id}`;
+                        }}
+                        className="bg-blue-600 text-white p-1.5 rounded-md hover:bg-blue-700 transition text-xs font-bold shadow-md"
+                        title="Edit Product"
+                      >
+                        ✏️ Edit
+                      </button>
+
+                      {/* Delete Button */}
+                      <button
+                        type="button"
+                        onClick={(e) => handleDelete(e, item._id)}
+                        className="bg-red-600 text-white p-1.5 rounded-md hover:bg-red-700 transition text-xs font-bold shadow-md"
+                        title="Delete Product"
+                      >
+                        🗑️ Delete
+                      </button>
+                    </div>
                   </div>
 
                   {/* ২. ইমেজের নিচে টাইটেল */}
