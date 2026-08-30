@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import connectDB from "@/lib/db";
+import { dbConnect } from "@/lib/mongodb";
 import Product from "@/models/Product";
 
 export async function GET(request, { params }) {
   try {
-    await connectDB();
+    await dbConnect();
     const { id } = await params;
 
     const product = await Product.findById(id).lean();
