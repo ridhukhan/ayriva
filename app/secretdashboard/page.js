@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import UploadPost from "./components/UploadPost"; // পাথ চেক করুন
-import OrderList from "./components/OrderList";   // পাথ চেক করুন
+import UploadPost from "@/app/components/UploadPost"; // পাথ চেক করুন
+import OrderList from "@/app/components/OrderList";   // পাথ চেক করুন
 
 export default function SecretDashboard() {
   const router = useRouter();
