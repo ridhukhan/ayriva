@@ -19,9 +19,15 @@ export async function GET(req) {
     await dbConnect();
     const { searchParams } = new URL(req.url);
     const category = searchParams.get("category");
+    const limit = Number(searchParams.get("limit")) || 0; // limit ধরবে
 
-    const filter = category ? { category } : {};
-    const products = await Product.find(filter);
+    let query = {};
+    if (category) {
+      query.category = category;
+    }
+
+    // sort({ createdAt: -1 }) দেওয়া হয়েছে যেন লেটেস্ট আপলোড করা ৪টি প্রোডাক্ট প্রথমে আসে
+    const products = await Product.find(query).sort({ createdAt: -1 }).limit(limit);
 
     return NextResponse.json({ success: true, products }, { status: 200 });
   } catch (error) {
