@@ -1,64 +1,41 @@
-"use client";
-
 import Link from "next/link";
 import HeroSlider from "./components/hero";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { headers } from "next/headers";
+import NavbarUserButton from "./components/NavbarUserButton"; // ইউজার লগইন চেক করার ছোট ক্লায়েন্ট কম্পোনেন্ট
 
-export default function Home() {
-  const router = useRouter();
+// Server-side ISR Fetching Function
+async function getHomeCategoryProducts() {
+  try {
+    const headersList = await headers();
+    const host = headersList.get("host");
+    const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
+    const baseUrl = `${protocol}://${host}`;
 
-  // User State
-  const [user, setUser] = useState(null);
+    const [skinRes, bodyRes, hairRes] = await Promise.all([
+      fetch(`${baseUrl}/api/products?category=skincare&limit=4`, { next: { revalidate: 10 } }),
+      fetch(`${baseUrl}/api/products?category=bodycare&limit=4`, { next: { revalidate: 10 } }),
+      fetch(`${baseUrl}/api/products?category=haircare&limit=4`, { next: { revalidate: 10 } }),
+    ]);
 
-  // Category Products States
-  const [skincareProducts, setSkincareProducts] = useState([]);
-  const [bodycareProducts, setBodycareProducts] = useState([]);
-  const [haircareProducts, setHaircareProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+    const skinData = await skinRes.json();
+    const bodyData = await bodyRes.json();
+    const hairData = await hairRes.json();
 
-  useEffect(() => {
-    // 1. Check User Context
-    async function checkUser() {
-      try {
-        const res = await fetch("/api/me");
-        const data = await res.json();
-        if (data.customer) {
-          setUser(data.customer);
-        }
-      } catch (error) {
-        console.error("failed to fetch user context");
-      }
-    }
+    return {
+      skincareProducts: skinData?.success ? skinData.products : [],
+      bodycareProducts: bodyData?.success ? bodyData.products : [],
+      haircareProducts: hairData?.success ? hairData.products : [],
+    };
+  } catch (error) {
+    console.error("Failed to fetch home products:", error);
+    return { skincareProducts: [], bodycareProducts: [], haircareProducts: [] };
+  }
+}
 
-    // 2. Fetch Category Products from Backend
-    async function fetchAllCategoryProducts() {
-      try {
-        const [skinRes, bodyRes, hairRes] = await Promise.all([
-          fetch("/api/products?category=skincare&limit=4"),
-          fetch("/api/products?category=bodycare&limit=4"),
-          fetch("/api/products?category=haircare&limit=4"),
-        ]);
+export default async function Home() {
+  const { skincareProducts, bodycareProducts, haircareProducts } = await getHomeCategoryProducts();
 
-        const skinData = await skinRes.json();
-        const bodyData = await bodyRes.json();
-        const hairData = await hairRes.json();
-
-        if (skinData.success) setSkincareProducts(skinData.products);
-        if (bodyData.success) setBodycareProducts(bodyData.products);
-        if (hairData.success) setHaircareProducts(hairData.products);
-      } catch (error) {
-        console.error("Failed to fetch home products:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    checkUser();
-    fetchAllCategoryProducts();
-  }, []);
-
-  // reusable product section grid renderer (1 line a 2 ta product)
+  // Reusable section renderer
   const renderProductSection = (title, categoryPath, products) => {
     return (
       <section className="mt-8 px-4 max-w-5xl mx-auto">
@@ -76,11 +53,7 @@ export default function Home() {
         </div>
 
         {/* Product Grid: 1 line a 2 ta product (grid-cols-2) */}
-        {loading ? (
-          <p className="text-center py-6 font-bold text-amber-950">
-            Loading {title}...
-          </p>
-        ) : products.length === 0 ? (
+        {products.length === 0 ? (
           <p className="text-gray-500 text-sm italic">
             No products available.
           </p>
@@ -115,13 +88,13 @@ export default function Home() {
                     </p>
                   </div>
 
-                  {/* Buy Now Button */}
-                  <button
-                    onClick={() => router.push(`/${categoryPath}/${item._id}`)}
-                    className="w-full bg-yellow-700 text-black font-bold py-2 px-2 md:px-4 text-xs md:text-sm rounded-lg hover:bg-yellow-600 transition cursor-pointer"
+                  {/* Buy Now Link */}
+                  <Link
+                    href={`/${categoryPath}/${item._id}`}
+                    className="w-full bg-yellow-700 text-black font-bold py-2 px-2 md:px-4 text-xs md:text-sm rounded-lg hover:bg-yellow-600 transition text-center block"
                   >
                     Buy Now
-                  </button>
+                  </Link>
                 </div>
               );
             })}
@@ -143,11 +116,7 @@ export default function Home() {
           />
         </div>
         <div>
-          <Link href={user ? "/profile" : "/register"}>
-            <button className="bg-slate-400 p-2 px-8 rounded-3xl shadow-[3px_7px_15px_#000] font-bold text-black">
-              {user ? user.username : "Login"}
-            </button>
-          </Link>
+          <NavbarUserButton />
         </div>
       </nav>
 

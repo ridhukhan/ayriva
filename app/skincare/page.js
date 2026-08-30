@@ -1,38 +1,30 @@
-"use client";
-
-import useSWR from "swr";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { headers } from "next/headers";
 
-// SWR-এর জন্য ফেচার ফাংশন
-const fetcher = (url) => fetch(url).then((res) => res.json());
+// Server-side ISR Fetching Function
+async function getSkincareProducts() {
+  try {
+    // Next.js Server Component-এ Absolute URL পাওয়ার জন্য
+    const headersList = await headers();
+    const host = headersList.get("host");
+    const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
+    const baseUrl = `${protocol}://${host}`;
 
-export default function SkincarePage() {
-  const router = useRouter();
+    const res = await fetch(`${baseUrl}/api/products?category=skincare`, {
+      next: { revalidate: 10 }, // ⚡ ১০ সেকেন্ড ক্যাশিং (ISR)
+    });
 
-  // SWR দিয়ে ডাটা ফেচিং ও ক্যাশিং (১০ সেকেন্ডের মধ্যে রিপিটেড ফেচ হবে না)
-  const { data, error, isLoading } = useSWR("/api/products?category=skincare", fetcher, {
-    revalidateOnFocus: false,
-    dedupingInterval: 10000,
-  });
-
-  const products = data?.success ? data.products : [];
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <h2 className="text-xl font-bold text-black">Loading Skincare Products...</h2>
-      </div>
-    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data?.success ? data.products : [];
+  } catch (error) {
+    console.error("Failed to fetch skincare products:", error);
+    return [];
   }
+}
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <h2 className="text-xl font-bold text-red-600">Failed to load products.</h2>
-      </div>
-    );
-  }
+export default async function SkincarePage() {
+  const products = await getSkincareProducts();
 
   return (
     <div className="bg-white min-h-screen p-6 md:p-12 relative">
@@ -58,10 +50,10 @@ export default function SkincarePage() {
             const defaultPrice = item.variants?.[0]?.price || 0;
 
             return (
-              <div
+              <Link
                 key={item._id}
-                onClick={() => router.push(`/skincare/${item._id}`)}
-                className="border border-[#D4AF37] shadow-black shadow-lg rounded-xl p-4 flex flex-col justify-between bg-white cursor-pointer"
+                href={`/skincare/${item._id}`}
+                className="border border-[#D4AF37] shadow-black shadow-lg rounded-xl p-4 flex flex-col justify-between bg-white cursor-pointer block"
               >
                 <div>
                   {/* ১. মেইন ইমেজ */}
@@ -85,16 +77,10 @@ export default function SkincarePage() {
                 </div>
 
                 {/* ৪. প্রাইসের নিচে Buy Now বাটন */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    router.push(`/skincare/${item._id}`);
-                  }}
-                  className="w-full bg-yellow-700 text-black font-bold py-2.5 px-4 rounded-lg hover:bg-yellow-600 transition duration-200 cursor-pointer"
-                >
+                <div className="w-full bg-yellow-700 text-black font-bold py-2.5 px-4 rounded-lg hover:bg-yellow-600 transition duration-200 text-center">
                   Buy Now
-                </button>
-              </div>
+                </div>
+              </Link>
             );
           })}
         </div>
