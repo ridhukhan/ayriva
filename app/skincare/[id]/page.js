@@ -12,6 +12,7 @@ export default function ProductDetailPage({ params }) {
   const [loading, setLoading] = useState(true);
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [quantity, setQuantity] = useState(1);
+  const [activeImage, setActiveImage] = useState(""); // 📸 কারেন্ট মেইন ইমেজ দেখানোর জন্য State
 
   // Order Form States
   const [name, setName] = useState("");
@@ -29,6 +30,7 @@ export default function ProductDetailPage({ params }) {
 
         if (data?.success && data?.product) {
           setProduct(data.product);
+          setActiveImage(data.product.mainImage); // ডিফোল্ট মেইন ইমেজ সেট করা হলো
           setSelectedVariant(
             data.product.variants?.[0] || { size: "Default", price: 0 }
           );
@@ -117,18 +119,48 @@ export default function ProductDetailPage({ params }) {
 
   const totalPrice = (selectedVariant?.price || 0) * quantity;
 
+  // মেইন ইমেজ + সব সাব-ইমেজ একসাথে লিস্ট করা (যদি galleryImages থাকে)
+  const allImages = [
+    product.mainImage,
+    ...(product.subImages || product.galleryImages || []),
+  ].filter(Boolean);
+
   return (
     <div className="bg-amber-50 min-h-screen p-4 md:p-8 flex justify-center">
       <div className="max-w-3xl w-full bg-white rounded-2xl p-4 md:p-6 shadow-xl border border-[#D4AF37]">
         
-        {/* Main Image */}
-        <div className="w-full h-72 md:h-96 rounded-xl overflow-hidden mb-6 bg-gray-100">
+        {/* Main Display Image */}
+        <div className="w-full h-72 md:h-96 rounded-xl overflow-hidden mb-4 bg-gray-100">
           <img
-            src={product.mainImage}
+            src={activeImage || product.mainImage}
             alt={product.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover transition-all duration-300"
           />
         </div>
+
+        {/* 🖼️ Sub Images / Gallery Thumbnails */}
+        {allImages.length > 1 && (
+          <div className="flex gap-3 mb-6 overflow-x-auto pb-2">
+            {allImages.map((imgUrl, index) => (
+              <button
+                key={index}
+                type="button"
+                onClick={() => setActiveImage(imgUrl)}
+                className={`w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden border-2 transition shrink-0 ${
+                  activeImage === imgUrl
+                    ? "border-amber-950 scale-105 shadow-md"
+                    : "border-gray-200 opacity-70 hover:opacity-100"
+                }`}
+              >
+                <img
+                  src={imgUrl}
+                  alt={`Thumbnail ${index + 1}`}
+                  className="w-full h-full object-cover"
+                />
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Title */}
         <h1 className="text-2xl md:text-3xl font-extrabold text-amber-950 mb-3">
