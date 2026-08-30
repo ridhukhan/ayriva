@@ -56,7 +56,7 @@ export default function ProductDetailPage({ params }) {
         productId: product._id,
         productTitle: product.title,
         selectedSize: selectedVariant?.size,
-        pricePerUnit: selectedVariant?.price,
+        unitPrice: selectedVariant?.price,
         quantity,
         totalPrice: (selectedVariant?.price || 0) * quantity,
         name,
