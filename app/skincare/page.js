@@ -105,7 +105,7 @@ export default function SkincarePage() {
                           e.preventDefault();
                           e.stopPropagation();
                           // এডিটের জন্য ড্যাশবোর্ড বা এডিট রাউটে রিডাইরেক্ট
-                          window.location.href = `/dashboard/edit-product/${item._id}`;
+                          window.location.href = `/secretdashboard/edit-product/${item._id}`;
                         }}
                         className="bg-blue-600 text-white p-1.5 rounded-md hover:bg-blue-700 transition text-xs font-bold shadow-md"
                         title="Edit Product"
