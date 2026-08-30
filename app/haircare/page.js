@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-
+import Link from "next/link";
 export default function HaircarePage() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,6 +38,8 @@ export default function HaircarePage() {
 
   return (
     <div className="bg-white min-h-screen p-6 md:p-12">
+      <Link href={"/"}><p className="bg-black text-taupe-100 left-0">go back</p></Link>
+
       <h1 className="text-3xl font-bold text-center mb-8 text-black">
         HairCare Collection
       </h1>
@@ -54,6 +56,8 @@ export default function HaircarePage() {
             return (
               <div
                 key={item._id}
+                  onClick={() => router.push(`/haircare/${item._id}`)}
+
                 className="border border-[#D4AF37] shadow-black shadow-lg rounded-xl p-4 flex flex-col justify-between bg-white"
               >
                 <div>

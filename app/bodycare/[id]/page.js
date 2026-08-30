@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { use, useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -123,6 +124,7 @@ export default function ProductDetailsPage({ params }) {
 
   return (
     <div className="min-h-screen bg-white text-black p-4 md:p-10 flex justify-center items-center">
+      <Link href={"/bodycare"}><p className="bg-black text-taupe-100 left-0">go back</p></Link>
       <div className="max-w-2xl w-full border border-[#D4AF37] shadow-black shadow-xl rounded-2xl p-6 md:p-8 bg-white flex flex-col gap-6">
         
         {/* 1. Main Display Image */}
@@ -156,7 +158,7 @@ export default function ProductDetailsPage({ params }) {
           <h1 className="text-2xl md:text-3xl font-extrabold text-black">
             {product.title}
           </h1>
-          <p className="text-gray-700 text-sm md:text-base leading-relaxed">
+          <p className="text-gray-700 text-sm md:text-base leading-relaxed whitespace-pre-line">
             {product.description}
           </p>
           {product.benefits && (
