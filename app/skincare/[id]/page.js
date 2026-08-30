@@ -1,16 +1,26 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useState, useEffect } from "react";
+import useSWR from "swr";
 import { toast } from "sonner";
 import Link from "next/link";
+
+// SWR-এর জন্য ফেচার ফাংশন
+const fetcher = (url) => fetch(url).then((res) => res.json());
+
 export default function ProductDetailsPage({ params }) {
   // Next.js-এর async params unwrapping
   const resolvedParams = use(params);
   const id = resolvedParams.id;
 
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
-  
+  // SWR দিয়ে ডাইনামিক ক্যাশিং যুক্ত করা হয়েছে
+  const { data, error, isLoading } = useSWR(id ? `/api/products/${id}` : null, fetcher, {
+    revalidateOnFocus: false,
+    dedupingInterval: 10000,
+  });
+
+  const product = data?.success ? data.product : null;
+
   const [activeImg, setActiveImg] = useState("");
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [quantity, setQuantity] = useState(1);
@@ -22,34 +32,17 @@ export default function ProductDetailsPage({ params }) {
   const [area, setArea] = useState("");
   const [orderSubmitting, setOrderSubmitting] = useState(false);
 
-  // Single Product Fetching Logic
+  // প্রোডাক্ট লোড হওয়ার পর ইনিশিয়াল ইমেজ ও ভ্যারিয়েন্ট সেট করা
   useEffect(() => {
-    async function getProduct() {
-      try {
-        const res = await fetch(`/api/products/${id}`);
-        const data = await res.json();
-
-        if (data.success && data.product) {
-          setProduct(data.product);
-          setActiveImg(data.product.mainImage);
-          // প্রথম সাইজ-প্রাইস টি বাই ডিফল্ট সিলেক্ট থাকবে
-          if (data.product.variants && data.product.variants.length > 0) {
-            setSelectedVariant(data.product.variants[0]);
-          }
-        } else {
-          toast.error("Product not found!");
-        }
-      } catch (error) {
-        toast.error("Failed to load product details.");
-      } finally {
-        setLoading(false);
+    if (product) {
+      setActiveImg(product.mainImage);
+      if (product.variants && product.variants.length > 0) {
+        setSelectedVariant(product.variants[0]);
       }
     }
+  }, [product]);
 
-    if (id) getProduct();
-  }, [id]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <h2 className="text-xl font-bold text-black">Loading Details...</h2>
@@ -57,15 +50,18 @@ export default function ProductDetailsPage({ params }) {
     );
   }
 
-  if (!product) {
+  if (error || !product) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4">
         <h2 className="text-xl font-bold text-red-600">Product not found!</h2>
+        <Link href="/skincare" className="bg-black text-white px-4 py-2 rounded-lg text-sm">
+          Return to Skincare
+        </Link>
       </div>
     );
   }
 
-  // Gallery-র জন্য সব ছবি একটি Array-তে নিয়ে আসা
+  // Gallery-র জন্য সব ছবি একটি Array-তে নিয়ে আসা
   const allImages = [product.mainImage, ...(product.subImages || [])].filter(Boolean);
 
   // Dynamic Total Price Calculation
@@ -102,9 +98,9 @@ export default function ProductDetailsPage({ params }) {
         body: JSON.stringify(orderData),
       });
 
-      const data = await res.json();
+      const dataRes = await res.json();
 
-      if (data.success) {
+      if (dataRes.success) {
         toast.success("Order placed successfully!");
         setName("");
         setDistrict("");
@@ -112,7 +108,7 @@ export default function ProductDetailsPage({ params }) {
         setArea("");
         setQuantity(1);
       } else {
-        toast.error(data.message || "Failed to place order.");
+        toast.error(dataRes.message || "Failed to place order.");
       }
     } catch (err) {
       toast.error("Something went wrong while placing the order.");
@@ -122,10 +118,15 @@ export default function ProductDetailsPage({ params }) {
   };
 
   return (
-    <div className="min-h-screen bg-white text-black p-4 md:p-10 flex justify-center items-center">
-      <Link href={"/skincare"}><p className="bg-black text-taupe-100 left-0">go back</p></Link>
+    <div className="min-h-screen bg-white text-black p-4 md:p-10 flex justify-center items-center relative">
+      {/* Top Left Fixed/Absolute Go Back Button */}
+      <Link href={"/skincare"} className="absolute top-4 left-4 z-10">
+        <span className="bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md hover:bg-gray-800 transition">
+          ← Go Back
+        </span>
+      </Link>
 
-      <div className="max-w-2xl w-full border border-[#D4AF37] shadow-black shadow-xl rounded-2xl p-6 md:p-8 bg-white flex flex-col gap-6">
+      <div className="max-w-2xl w-full border border-[#D4AF37] shadow-black shadow-xl rounded-2xl p-6 md:p-8 bg-white flex flex-col gap-6 mt-10 md:mt-0">
         
         {/* 1. Main Display Image */}
         <div className="w-full h-80 rounded-xl overflow-hidden border border-gray-200">

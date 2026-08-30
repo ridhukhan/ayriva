@@ -1,34 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import useSWR from "swr";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+
+// SWR-এর জন্য ফেচার ফাংশন
+const fetcher = (url) => fetch(url).then((res) => res.json());
+
 export default function SkincarePage() {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // ডাটাবেজ থেকে Skincare ক্যাটাগরির প্রোডাক্ট লোড করার useEffect
-  useEffect(() => {
-    async function fetchProducts() {
-      try {
-        const res = await fetch("/api/products?category=skincare");
-        const data = await res.json();
+  // SWR দিয়ে ডাটা ফেচিং ও ক্যাশিং (১০ সেকেন্ডের মধ্যে রিপিটেড ফেচ হবে না)
+  const { data, error, isLoading } = useSWR("/api/products?category=skincare", fetcher, {
+    revalidateOnFocus: false,
+    dedupingInterval: 10000,
+  });
 
-        if (data.success) {
-          setProducts(data.products);
-        }
-      } catch (error) {
-        console.error("Failed to fetch products:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
+  const products = data?.success ? data.products : [];
 
-    fetchProducts();
-  }, []);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <h2 className="text-xl font-bold text-black">Loading Skincare Products...</h2>
@@ -36,12 +26,24 @@ export default function SkincarePage() {
     );
   }
 
-  return (
-    // সম্পূর্ণ পেজের ব্যাকগ্রাউন্ড সাদা (bg-white)
-    <div className="bg-white min-h-screen p-6 md:p-12">
-      <Link href={"/"}><p className="bg-black text-taupe-100 left-0">go back</p></Link>
+  if (error) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <h2 className="text-xl font-bold text-red-600">Failed to load products.</h2>
+      </div>
+    );
+  }
 
-      <h1 className="text-3xl font-bold text-center mb-8 text-black">
+  return (
+    <div className="bg-white min-h-screen p-6 md:p-12 relative">
+      {/* Top Left Fixed/Absolute Go Back Button */}
+      <Link href={"/"} className="absolute top-4 left-4 z-10">
+        <span className="bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md hover:bg-gray-800 transition">
+          ← Go Back
+        </span>
+      </Link>
+
+      <h1 className="text-3xl font-bold text-center mb-8 text-black mt-6 md:mt-0">
         Skincare Collection
       </h1>
 
@@ -53,16 +55,13 @@ export default function SkincarePage() {
         /* প্রোডাক্টের ডায়নামিক গ্রিড লেআউট */
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
           {products.map((item) => {
-            // প্রথম variant-এর প্রাইসকে ডিফোল্ট প্রাইস ধরা হয়েছে
             const defaultPrice = item.variants?.[0]?.price || 0;
 
             return (
               <div
                 key={item._id}
-                  onClick={() => router.push(`/skincare/${item._id}`)}
-
-                // সিঙ্গেল ডিভ: ১ পিক্সেল গোল্ডেন বর্ডার, ব্ল্যাক শ্যাডো, হোয়াইট ব্যাকগ্রাউন্ড
-                className="border border-[#D4AF37] shadow-black shadow-lg rounded-xl p-4 flex flex-col justify-between bg-white"
+                onClick={() => router.push(`/skincare/${item._id}`)}
+                className="border border-[#D4AF37] shadow-black shadow-lg rounded-xl p-4 flex flex-col justify-between bg-white cursor-pointer"
               >
                 <div>
                   {/* ১. মেইন ইমেজ */}
@@ -85,9 +84,12 @@ export default function SkincarePage() {
                   </p>
                 </div>
 
-                {/* ৪. প্রাইসের নিচে Buy Now বাটন (সিঙ্গেল প্রোডাক্ট ডিটেইলস পেজে নিয়ে যাবে) */}
+                {/* ৪. প্রাইসের নিচে Buy Now বাটন */}
                 <button
-                  onClick={() => router.push(`/skincare/${item._id}`)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push(`/skincare/${item._id}`);
+                  }}
                   className="w-full bg-yellow-700 text-black font-bold py-2.5 px-4 rounded-lg hover:bg-yellow-600 transition duration-200 cursor-pointer"
                 >
                   Buy Now
