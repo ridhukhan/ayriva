@@ -63,13 +63,26 @@ export default function Profile() {
       <h1 className="text-3xl font-bold text-gray-900">{user?.username}</h1>
       <h2 className="text-xl text-gray-600">{user?.email}</h2>
 
-      <button
-        disabled={loggingOut}
-        onClick={handleLogout}
-        className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-lg font-bold px-6 py-2 rounded-xl transition cursor-pointer"
-      >
-        {loggingOut ? "Logging out..." : "Logout"}
-      </button>
+      <div className="flex flex-col sm:flex-row gap-3 mt-2">
+        {/* 🔐 শুধুমাত্র Admin হলেই Dashboard বাটনটি দেখাবে */}
+        {user?.role === "admin" && (
+          <button
+            onClick={() => router.push("/secretdashboard")}
+            className="bg-amber-800 hover:bg-amber-900 text-white text-lg font-bold px-6 py-2 rounded-xl transition cursor-pointer shadow-md"
+          >
+            Go to Dashboard
+          </button>
+        )}
+
+        {/* Logout Button */}
+        <button
+          disabled={loggingOut}
+          onClick={handleLogout}
+          className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-lg font-bold px-6 py-2 rounded-xl transition cursor-pointer shadow-md"
+        >
+          {loggingOut ? "Logging out..." : "Logout"}
+        </button>
+      </div>
     </div>
   );
 }
