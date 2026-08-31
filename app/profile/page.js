@@ -15,7 +15,8 @@ export default function Profile() {
         const res = await fetch("/api/me");
         if (res.ok) {
           const data = await res.json();
-          setUser(data.user);
+          // 💡 আপনার API 'customer' নামে ডাটা পাঠাচ্ছিল, তাই data.customer সেভ করতে হবে
+          setUser(data.customer || data.user); 
         } else {
           router.push("/");
           return;
@@ -60,21 +61,22 @@ export default function Profile() {
 
   return (
     <div className="flex flex-col min-h-screen w-full items-center justify-center text-center p-4 gap-4">
-      <h1 className="text-3xl font-bold text-gray-900">{user?.username}</h1>
+      <h1 className="text-3xl font-bold text-gray-900">
+        {user?.username || user?.name || "User"}
+      </h1>
       <h2 className="text-xl text-gray-600">{user?.email}</h2>
 
       <div className="flex flex-col sm:flex-row gap-3 mt-2">
-        {/* 🔐 শুধুমাত্র Admin হলেই Dashboard বাটনটি দেখাবে */}
-        {user?.role === "admin" && (
+        {/* 🔐 Admin Role Check (Case-insensitive) */}
+        {user?.role?.toLowerCase() === "admin" && (
           <button
             onClick={() => router.push("/secretdashboard")}
             className="bg-amber-800 hover:bg-amber-900 text-white text-lg font-bold px-6 py-2 rounded-xl transition cursor-pointer shadow-md"
           >
-            Go to Dashboard
+            Dashboard
           </button>
         )}
 
-        {/* Logout Button */}
         <button
           disabled={loggingOut}
           onClick={handleLogout}
