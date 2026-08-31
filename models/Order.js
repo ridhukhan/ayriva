@@ -10,6 +10,9 @@ const orderSchema = new mongoose.Schema(
     totalPrice: { type: Number, required: true },
     name: { type: String, required: true },
     district: { type: String, required: true },
+    phone: { type: String, required: true },
+
+    
     policeStation: { type: String, required: true },
     area: { type: String, required: true },
   },
