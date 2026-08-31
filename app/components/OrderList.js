@@ -30,7 +30,7 @@ export default function OrderList() {
   // 🔄 Status Update Handler (Pending, Confirm, Return)
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      const res = await fetch(`/api/orders/${orderId}`, {
+      const res = await fetch(`/api/orders`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({id:orderId, status: newStatus }),
