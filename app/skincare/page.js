@@ -37,7 +37,7 @@ export default function SkincarePage() {
         }
       } catch (error) {
         console.error("Failed to fetch skincare products:", error);
-      } font-finally {
+      } finally {
         setLoading(false);
       }
     }
