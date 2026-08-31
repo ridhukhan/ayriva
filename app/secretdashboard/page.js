@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import UploadPost from "@/app/components/UploadPost"; // পাথ চেক করুন
 import OrderList from "@/app/components/OrderList";   // পাথ চেক করুন
-
+import Link from "next/link";
 export default function SecretDashboard() {
   const router = useRouter();
   const [isAdmin, setIsAdmin] = useState(false);
@@ -46,7 +46,11 @@ export default function SecretDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-100 p-4 md:p-8 flex flex-col items-center">
-      
+      <Link href={"/"} className="absolute top-4 left-4 z-10">
+        <span className="bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md hover:bg-gray-800 transition">
+          ← Go Back
+        </span>
+      </Link>
       {/* Top Header & Navbar */}
       <div className="w-full max-w-2xl flex flex-col items-center mb-6">
         <h1 className="text-3xl font-extrabold text-amber-950 mb-4">
