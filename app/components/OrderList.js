@@ -103,6 +103,7 @@ export default function OrderList() {
               <th className="p-3">Size & Qty</th>
               <th className="p-3">Total Price</th>
               <th className="p-3">Delivery Address</th>
+              <th className="p-3">phone</th>
 
 
               <th className="p-3">Status</th>
@@ -116,8 +117,7 @@ export default function OrderList() {
               return (
                 <tr key={order._id} className="hover:bg-amber-50/40 transition">
                   <td className="p-3 font-bold text-black flex flex-col">
-                    <div><p>{order.name}</p>
-                    <p className=" text-black font-bold">{order.phone}</p>
+                    <div>{order.name}
                     </div>
                   </td> 
                   <td className="p-3 font-semibold text-gray-800">
@@ -132,7 +132,11 @@ export default function OrderList() {
                   <td className="p-3 text-gray-600 leading-tight">
                     {order.area}, {order.policeStation}, {order.district}
                   </td>
+                   <td className=" text-black font-bold">   
 
+                    {order.phone}
+
+                   </td>
                   {/* 📌 Current Status Badge */}
                   <td className="p-3 font-bold">
                     <span
