@@ -27,13 +27,13 @@ export default function OrderList() {
     fetchOrders();
   }, []);
 
-  // 🔄 Status Update Handler (Pending, Confirm, Return)
+  // 🔄 Status Update Handler
   const handleStatusChange = async (orderId, newStatus) => {
     try {
       const res = await fetch("/api/orders", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({id:orderId, status: newStatus }),
+        body: JSON.stringify({ id: orderId, status: newStatus }),
       });
 
       const data = await res.json();
@@ -76,7 +76,7 @@ export default function OrderList() {
   if (loading) {
     return (
       <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-4xl border border-amber-200 text-center">
-        <h3 className="font-bold text-amber-950">Loading Orders...</h3>
+        <h3 className="font-bold text-amber-950 animate-pulse">Loading Orders...</h3>
       </div>
     );
   }
@@ -95,17 +95,15 @@ export default function OrderList() {
           No orders found yet!
         </p>
       ) : (
-        <table className="w-full text-left border-collapse min-w-[800px]">
+        <table className="w-full text-left border-collapse min-w-[900px]">
           <thead>
             <tr className="bg-amber-950 text-white text-xs">
               <th className="p-3 rounded-l-lg">Customer Info</th>
+              <th className="p-3">Phone</th>
               <th className="p-3">Product Title</th>
               <th className="p-3">Size & Qty</th>
               <th className="p-3">Total Price</th>
               <th className="p-3">Delivery Address</th>
-              <th className="p-3">phone</th>
-
-
               <th className="p-3">Status</th>
               <th className="p-3 rounded-r-lg text-center">Actions</th>
             </tr>
@@ -116,28 +114,37 @@ export default function OrderList() {
 
               return (
                 <tr key={order._id} className="hover:bg-amber-50/40 transition">
-                  <td className="p-3 font-bold text-black flex flex-col">
-                    <div>{order.name}
-                    </div>
-                  </td> 
+                  {/* ১. কাস্টমার নেম */}
+                  <td className="p-3 font-bold text-black">
+                    {order.name || "N/A"}
+                  </td>
+
+                  {/* ২. ফোন নাম্বার (সঠিক কলামে আনা হয়েছে) */}
+                  <td className="p-3 font-bold text-blue-700 whitespace-nowrap">
+                    {order.phone || "No Phone"}
+                  </td>
+
+                  {/* ৩. প্রোডাক্ট টাইটেল */}
                   <td className="p-3 font-semibold text-gray-800">
                     {order.productTitle}
                   </td>
-                  <td className="p-3 text-amber-900 font-bold">
+
+                  {/* ৪. সাইজ ও পরিমাণ */}
+                  <td className="p-3 text-amber-900 font-bold whitespace-nowrap">
                     {order.selectedSize} × {order.quantity}
                   </td>
-                  <td className="p-3 font-black text-green-700">
+
+                  {/* ৫. মোট প্রাইস */}
+                  <td className="p-3 font-black text-green-700 whitespace-nowrap">
                     ৳{order.totalPrice}
                   </td>
+
+                  {/* ৬. ডেলিভারি অ্যাড্রেস */}
                   <td className="p-3 text-gray-600 leading-tight">
                     {order.area}, {order.policeStation}, {order.district}
                   </td>
-                   <td className=" text-black  p-6">   
 
-                    {order.phone}
-
-                   </td>
-                  {/* 📌 Current Status Badge */}
+                  {/* ৭. স্ট্যাটাস ব্যাজ */}
                   <td className="p-3 font-bold">
                     <span
                       className={`px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider ${
@@ -152,7 +159,7 @@ export default function OrderList() {
                     </span>
                   </td>
 
-                  {/* ⚙️ Status Actions & Cancel Button */}
+                  {/* ৮. অ্যাকশন বাটনসমূহ */}
                   <td className="p-3 text-center">
                     <div className="flex items-center justify-center gap-1.5">
                       <button
