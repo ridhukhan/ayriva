@@ -14,6 +14,7 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "Ayriva",
   description: "We Belive in Quality Not Quantity",
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({ children }) {
