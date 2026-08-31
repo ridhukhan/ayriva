@@ -18,7 +18,7 @@ export async function generateMetadata({ params }) {
 
     return {
       title: `${product.title} | Ayriva`,
-      description: product.description?.substring(0, 150) || "Authentic bodycarr product",
+      description: product.description?.substring(0, 150) || "Authentic bodycare product",
       openGraph: {
         title: product.title,
         description: product.description?.substring(0, 150),
