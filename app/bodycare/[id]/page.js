@@ -18,11 +18,11 @@ export async function generateMetadata({ params }) {
 
     return {
       title: `${product.title} | Ayriva`,
-      description: product.description?.substring(0, 150) || "Authentic skincare product",
+      description: product.description?.substring(0, 150) || "Authentic bodycarr product",
       openGraph: {
         title: product.title,
         description: product.description?.substring(0, 150),
-        url: `${baseUrl}/skincare/${id}`,
+        url: `${baseUrl}/bodycare/${id}`,
         siteName: "Ayriva",
         images: [
           {
@@ -36,7 +36,7 @@ export async function generateMetadata({ params }) {
       },
     };
   } catch (error) {
-    return { title: "Ayriva Skincare" };
+    return { title: "Ayriva bodycare" };
   }
 }
 
