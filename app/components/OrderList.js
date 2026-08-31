@@ -132,7 +132,7 @@ export default function OrderList() {
                   <td className="p-3 text-gray-600 leading-tight">
                     {order.area}, {order.policeStation}, {order.district}
                   </td>
-                   <td className=" text-black font-bold">   
+                   <td className=" text-black  p-6">   
 
                     {order.phone}
 
