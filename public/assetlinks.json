@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.ayriva.app",
+        "sha256_cert_fingerprints": ["88:19:37:BD:D0:B3:4A:98:97:26:81:BF:6E:ED:46:7F:A8:FA:F0:CE:BA:C7:51:BF:7C:D3:E3:81:98:26:1E:C0"]
+      }
+    }]
