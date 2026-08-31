@@ -17,7 +17,7 @@ export default function SkincarePage() {
         const res = await fetch("/api/me");
         if (res.ok) {
           const data = await res.json();
-          if (data?.user?.role === "admin") {
+          if (data?.customer?.role === "admin") {
             setIsAdmin(true);
           }
         }
