@@ -103,6 +103,8 @@ export default function OrderList() {
               <th className="p-3">Size & Qty</th>
               <th className="p-3">Total Price</th>
               <th className="p-3">Delivery Address</th>
+
+
               <th className="p-3">Status</th>
               <th className="p-3 rounded-r-lg text-center">Actions</th>
             </tr>
@@ -113,7 +115,7 @@ export default function OrderList() {
 
               return (
                 <tr key={order._id} className="hover:bg-amber-50/40 transition">
-                  <td className="p-3 font-bold text-black">
+                  <td className="p-3 font-bold text-black flex flex-col">
                     <div>{order.name}</div>
                     <div className="text-[10px] text-gray-500">{order.phone}</div>
                   </td>
