@@ -116,9 +116,10 @@ export default function OrderList() {
               return (
                 <tr key={order._id} className="hover:bg-amber-50/40 transition">
                   <td className="p-3 font-bold text-black flex flex-col">
-                    <div>{order.name}</div>
-                    <div className="text-[10px] text-gray-500">{order.phone}</div>
-                  </td>
+                    <div><p>{order.name}</p>
+                    <p className=" text-black font-bold">{order.phone}</p>
+                    </div>
+                  </td> 
                   <td className="p-3 font-semibold text-gray-800">
                     {order.productTitle}
                   </td>
