@@ -1,5 +1,7 @@
 import { TicketPlus } from 'lucide-react';
 import { Truck } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
+import { Undo2 } from 'lucide-react';
 export default function ProductInfo(){
 
 
@@ -14,7 +16,14 @@ export default function ProductInfo(){
 <h1><TicketPlus /><span className='text-red-600 font-bold'>Selling info</span></h1>
 <p>People Are Loving it! sold 100 pcs in last 24 hour</p>
 </div>
-
+<div className='flex flex-col'>
+<h1><ShieldCheck /><span className='text-red-600 font-bold'>Security info</span></h1>
+<p>100% Authenticated product </p>
+</div>
+<div className='flex flex-col'>
+<h1><Undo2 /><span className='text-red-600 font-bold'>Return info</span></h1>
+<p>we have easy return policy just knock me </p>
+</div>
 
         </div>
     )
