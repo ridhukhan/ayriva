@@ -3,16 +3,18 @@
 import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
+import ProductInfo from "@/app/components/Productinfo";
+import { X, CheckCircle2 } from "lucide-react";
 
 export default function ProductDetailPage({ params }) {
   const resolvedParams = use(params);
   const id = resolvedParams.id;
-
+  const [showpopup, setSowpopup] = useState(false);
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [quantity, setQuantity] = useState(1);
-  const [activeImage, setActiveImage] = useState(""); // 📸 কারেন্ট মেইন ইমেজ দেখানোর জন্য State
+  const [activeImage, setActiveImage] = useState("");
 
   // Order Form States
   const [name, setName] = useState("");
@@ -30,7 +32,7 @@ export default function ProductDetailPage({ params }) {
 
         if (data?.success && data?.product) {
           setProduct(data.product);
-          setActiveImage(data.product.mainImage); // ডিফোল্ট মেইন ইমেজ সেট করা হলো
+          setActiveImage(data.product.mainImage);
           setSelectedVariant(
             data.product.variants?.[0] || { size: "Default", price: 0 }
           );
@@ -83,6 +85,7 @@ export default function ProductDetailPage({ params }) {
         setDistrict("");
         setPoliceStation("");
         setArea("");
+        setSowpopup(true); // 🟢 সফল হলেই পপআপ দেখাবে
       } else {
         toast.error(data.message || "Failed to place order!");
       }
@@ -93,7 +96,6 @@ export default function ProductDetailPage({ params }) {
     }
   };
 
-  // 🔗 Product Link Copy Handler (Desktop + Mobile Easy Copy)
   const handleCopyLink = () => {
     if (typeof window !== "undefined") {
       navigator.clipboard.writeText(window.location.href);
@@ -127,7 +129,6 @@ export default function ProductDetailPage({ params }) {
 
   const totalPrice = (selectedVariant?.price || 0) * quantity;
 
-  // মেইন ইমেজ + সব সাব-ইমেজ একসাথে লিস্ট করা
   const allImages = [
     product.mainImage,
     ...(product.subImages || product.galleryImages || []),
@@ -135,26 +136,27 @@ export default function ProductDetailPage({ params }) {
 
   return (
     <>
-      {/* 🚀 Dynamic Meta Tags for WhatsApp & Social Media Sharing */}
       <head>
         <title>{product.title} | Ayriva</title>
         <meta property="og:title" content={product.title} />
         <meta
           property="og:description"
-          content={product.description?.slice(0, 150) || "Authentic skincare product from Ayriva."}
+          content={
+            product.description?.slice(0, 150) ||
+            "Authentic skincare product from Ayriva."
+          }
         />
         <meta property="og:image" content={product.mainImage} />
         <meta
           property="og:url"
-          content={`https://ayriva.netlify.app/skincare/${product._id}`}
+          content={`https://ayriva.netlify.app/bodycare/${product._id}`}
         />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Ayriva" />
       </head>
 
-      <div className="bg-amber-50 min-h-screen p-4 md:p-8 flex justify-center">
+      <div className="bg-amber-50 min-h-screen p-4 md:p-8 flex justify-center relative">
         <div className="max-w-3xl w-full bg-white rounded-2xl p-4 md:p-6 shadow-xl border border-[#D4AF37]">
-          
           {/* Main Display Image */}
           <div className="w-full h-72 md:h-96 rounded-xl overflow-hidden mb-4 bg-gray-100 relative">
             <img
@@ -187,7 +189,7 @@ export default function ProductDetailPage({ params }) {
             </div>
           )}
 
-          {/* Title & Copy Share Link Button */}
+          {/* Title & Copy Link */}
           <div className="flex items-start justify-between gap-2 mb-3">
             <h1 className="text-2xl md:text-3xl font-extrabold text-amber-950">
               {product.title}
@@ -202,22 +204,22 @@ export default function ProductDetailPage({ params }) {
             </button>
           </div>
 
-          {/* Description */}
           <p className="text-gray-700 text-sm md:text-base leading-relaxed whitespace-pre-line mb-6">
             {product.description}
           </p>
 
-          {/* Benefits (If available) */}
           {product.benefits && (
             <div className="bg-amber-100/60 border border-amber-300 p-4 rounded-xl mb-6">
-              <h3 className="font-bold text-amber-950 text-sm mb-1">Benefits:</h3>
+              <h3 className="font-bold text-amber-950 text-sm mb-1">
+                Benefits:
+              </h3>
               <p className="text-gray-800 text-xs md:text-sm whitespace-pre-line">
                 {product.benefits}
               </p>
             </div>
           )}
 
-          {/* Size / Variant Selection */}
+          {/* Size Selection */}
           {product.variants && product.variants.length > 0 && (
             <div className="mb-6">
               <h3 className="font-bold text-gray-800 text-sm mb-2">
@@ -242,7 +244,7 @@ export default function ProductDetailPage({ params }) {
             </div>
           )}
 
-          {/* Quantity and Price */}
+          {/* Quantity & Price */}
           <div className="flex items-center justify-between border-t border-b border-gray-200 py-4 mb-8">
             <div className="flex items-center border border-gray-300 rounded-xl overflow-hidden">
               <button
@@ -270,8 +272,10 @@ export default function ProductDetailPage({ params }) {
             </div>
           </div>
 
+          <ProductInfo />
+
           {/* Order Form */}
-          <div className="border border-amber-200 rounded-2xl p-4 md:p-6 bg-amber-50/50">
+          <div className="border border-amber-200 rounded-2xl p-4 md:p-6 bg-amber-50/50 mt-4">
             <h2 className="text-xl font-bold text-amber-950 mb-4 text-center">
               Checkout / Delivery Information
             </h2>
@@ -329,12 +333,56 @@ export default function ProductDetailPage({ params }) {
                 disabled={submitting}
                 className="w-full bg-yellow-700 text-black font-bold py-3.5 rounded-xl hover:bg-yellow-600 transition shadow-lg text-base cursor-pointer mt-2 disabled:opacity-50"
               >
-                {submitting ? "Placing Order..." : `Confirm Order (৳${totalPrice})`}
+                {submitting
+                  ? "Placing Order..."
+                  : `Confirm Order (৳${totalPrice})`}
               </button>
             </form>
           </div>
-
         </div>
+
+        {/* 🏆 Responsive Success Popup Modal */}
+        {showpopup && (
+          <div className="fixed top-0 left-0 w-full h-full bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-[9999]">
+            <div className="bg-white rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl relative border border-amber-200 transform transition-all animate-scaleUp">
+              {/* ❌ Cross Close Button */}
+              <button
+                onClick={() => setSowpopup(false)}
+                className="absolute top-4 right-4 bg-gray-100 hover:bg-gray-200 text-gray-700 p-1.5 rounded-full transition cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              {/* 🎬 Animated Confirmation GIF */}
+              <div className="w-28 h-28 mx-auto mb-2 flex items-center justify-center">
+                <img
+                  src="https://res.cloudinary.com/dfzaefrkt/image/upload/v1788590845/order_confirmed_uasggd.gif"
+                  alt="Order Confirmed Success"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+
+              {/* 🏷️ Headings & Message */}
+              <h1 className="text-2xl font-black text-emerald-600 mb-1 flex items-center justify-center gap-2">
+                Order Confirmed!
+              </h1>
+              <p className="text-gray-800 font-bold text-sm mb-2">
+                Thank you for shopping with Ayriva ❤️
+              </p>
+              <p className="text-xs text-gray-500 mb-6 leading-relaxed">
+                We have received your order. Our team will contact you soon for confirmation.
+              </p>
+
+              {/* 🔘 Close / Continue Button */}
+              <button
+                onClick={() => setSowpopup(false)}
+                className="w-full bg-amber-950 hover:bg-amber-900 text-white font-bold py-3 rounded-xl transition shadow-md cursor-pointer text-sm"
+              >
+                Continue Shopping
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
