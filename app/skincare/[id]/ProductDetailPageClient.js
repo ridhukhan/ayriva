@@ -3,6 +3,7 @@
 import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
+import ProductInfo from "@/app/components/Productinfo";
 
 export default function ProductDetailPage({ params }) {
   const resolvedParams = use(params);
@@ -269,7 +270,7 @@ export default function ProductDetailPage({ params }) {
               </span>
             </div>
           </div>
-
+          <ProductInfo/>
           {/* Order Form */}
           <div className="border border-amber-200 rounded-2xl p-4 md:p-6 bg-amber-50/50">
             <h2 className="text-xl font-bold text-amber-950 mb-4 text-center">
