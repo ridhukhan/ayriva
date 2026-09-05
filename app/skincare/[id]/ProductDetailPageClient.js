@@ -4,11 +4,10 @@ import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import ProductInfo from "@/app/components/Productinfo";
-
 export default function ProductDetailPage({ params }) {
   const resolvedParams = use(params);
   const id = resolvedParams.id;
-
+ const [showpopup ,setSowpopup]=useState(false) 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedVariant, setSelectedVariant] = useState(null);
@@ -90,6 +89,8 @@ export default function ProductDetailPage({ params }) {
     } catch (error) {
       toast.error("Error submitting order.");
     } finally {
+      setSowpopup(true)
+
       setSubmitting(false);
     }
   };
@@ -336,6 +337,11 @@ export default function ProductDetailPage({ params }) {
           </div>
 
         </div>
+        {showpopup && <div>
+          <img src="https://res.cloudinary.com/dfzaefrkt/image/upload/v1788590845/order_confirmed_uasggd.gif" alt="order confirmed success"/>
+          
+          
+          </div>}
       </div>
     </>
   );
