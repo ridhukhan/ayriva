@@ -1,5 +1,5 @@
 "use client";
-
+import { CircleUserRound } from "lucide-react";
 import Link from "next/link";
 import HeroSlider from "./components/hero";
 import { useEffect, useState } from "react";
@@ -145,7 +145,7 @@ export default function Home() {
         <div>
           <Link href={user ? "/profile" : "/register"}>
             <button className="bg-slate-400 p-2 px-8 rounded-3xl shadow-[3px_7px_15px_#000] font-bold text-black">
-              {user ? user.username : "Login"}
+              {user ? user.username : <CircleUserRound className="w-6 h-6 text-black"/>}
             </button>
           </Link>
         </div>
