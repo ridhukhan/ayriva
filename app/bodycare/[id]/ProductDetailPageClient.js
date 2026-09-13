@@ -123,12 +123,11 @@ export default function ProductDetailPage({ params }) {
 
   return (
     <div className="bg-amber-50 min-h-screen p-4 md:p-8 flex justify-center relative">
-        <Link
-          href="/bodycare"
-          className="bg-black text-white px-4 py-2 rounded-lg text-sm font-bold"
-        >
-          Return to bodycare
-        </Link>
+         <Link href={"/bodycare"} className="absolute top-4 left-4 z-10">
+        <span className="bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md hover:bg-gray-800 transition">
+          ← Go Back
+        </span>
+      </Link>
       <div className="max-w-3xl w-full bg-white rounded-2xl p-4 md:p-6 shadow-xl border border-[#D4AF37]">
         {/* Main Display Image */}
         <div className="w-full h-72 md:h-96 rounded-xl overflow-hidden mb-4 bg-gray-100 relative">
