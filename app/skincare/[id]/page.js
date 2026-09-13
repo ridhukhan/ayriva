@@ -1,4 +1,4 @@
-,import ProductDetailPageClient from "./ProductDetailPageClient";
+import ProductDetailPageClient from "./ProductDetailPageClient";
 
 
 
