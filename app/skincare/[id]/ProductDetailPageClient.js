@@ -260,6 +260,12 @@ export default function ProductDetailPageClient({ params }) {
 
         {/* Order Form */}
         <div className="border border-amber-200 rounded-2xl p-4 md:p-6 bg-amber-50/50 mt-4">
+          
+           <Link href={"/skincare"} className="absolute top-4 left-4 z-10">
+        <span className="bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md hover:bg-gray-800 transition">
+          ← Go Back
+        </span>
+      </Link>
           <h2 className="text-xl font-bold text-amber-950 mb-4 text-center">
             Checkout / Delivery Information
           </h2>

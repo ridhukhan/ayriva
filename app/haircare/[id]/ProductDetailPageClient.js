@@ -106,12 +106,7 @@ export default function ProductDetailPage({ params }) {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4">
         <h2 className="text-xl font-bold text-red-600">Product not found!</h2>
-        <Link
-          href="/bodycare"
-          className="bg-black text-white px-4 py-2 rounded-lg text-sm font-bold"
-        >
-          Return to bodycare
-        </Link>
+        
       </div>
     );
   }
@@ -145,6 +140,12 @@ export default function ProductDetailPage({ params }) {
       </head>
 
       <div className="bg-amber-50 min-h-screen p-4 md:p-8 flex justify-center relative">
+        <Link
+          href="/haircare"
+          className="bg-black text-white px-4 py-2 rounded-lg text-sm font-bold"
+        >
+          Return to bodycare
+        </Link>
         <div className="max-w-3xl w-full bg-white rounded-2xl p-4 md:p-6 shadow-xl border border-[#D4AF37]">
           {/* Main Display Image */}
           <div className="w-full h-72 md:h-96 rounded-xl overflow-hidden mb-4 bg-gray-100 relative">
