@@ -1,17 +1,19 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useState, use } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
+import useSWR from "swr";
 import ProductInfo from "@/app/components/Productinfo";
-import { X, CheckCircle2 } from "lucide-react";
+import { X } from "lucide-react";
+
+const fetcher = (url) => fetch(url).then((res) => res.json());
 
 export default function ProductDetailPage({ params }) {
   const resolvedParams = use(params);
   const id = resolvedParams.id;
+
   const [showpopup, setSowpopup] = useState(false);
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState("");
@@ -24,28 +26,15 @@ export default function ProductDetailPage({ params }) {
   const [area, setArea] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    async function fetchProduct() {
-      try {
-        const res = await fetch(`/api/products/${id}`);
-        const data = await res.json();
+  // 🚀 SWR দিয়ে সিঙ্গেল প্রোডাক্ট ফেচিং
+  const { data, isLoading } = useSWR(
+    id ? `/api/products/${id}` : null,
+    fetcher
+  );
 
-        if (data?.success && data?.product) {
-          setProduct(data.product);
-          setActiveImage(data.product.mainImage);
-          setSelectedVariant(
-            data.product.variants?.[0] || { size: "Default", price: 0 }
-          );
-        }
-      } catch (error) {
-        console.error("Fetch error:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    if (id) fetchProduct();
-  }, [id]);
+  const product = data?.product;
+  const currentVariant = selectedVariant || product?.variants?.[0] || { size: "Default", price: 0 };
+  const currentImage = activeImage || product?.mainImage;
 
   // Order Submit Handler
   const handleOrderSubmit = async (e) => {
@@ -59,10 +48,10 @@ export default function ProductDetailPage({ params }) {
       const orderData = {
         productId: product._id,
         productTitle: product.title,
-        selectedSize: selectedVariant?.size,
-        unitPrice: selectedVariant?.price,
+        selectedSize: currentVariant?.size,
+        unitPrice: currentVariant?.price,
         quantity,
-        totalPrice: (selectedVariant?.price || 0) * quantity,
+        totalPrice: (currentVariant?.price || 0) * quantity,
         name,
         phone,
         district,
@@ -76,18 +65,18 @@ export default function ProductDetailPage({ params }) {
         body: JSON.stringify(orderData),
       });
 
-      const data = await res.json();
+      const resData = await res.json();
 
-      if (res.ok && data.success) {
+      if (res.ok && resData.success) {
         toast.success("Order Placed Successfully!");
         setName("");
         setPhone("");
         setDistrict("");
         setPoliceStation("");
         setArea("");
-        setSowpopup(true); // 🟢 সফল হলেই পপআপ দেখাবে
+        setSowpopup(true);
       } else {
-        toast.error(data.message || "Failed to place order!");
+        toast.error(resData.message || "Failed to place order!");
       }
     } catch (error) {
       toast.error("Error submitting order.");
@@ -103,7 +92,7 @@ export default function ProductDetailPage({ params }) {
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-amber-50 flex items-center justify-center">
         <h2 className="text-xl font-bold text-amber-950 animate-pulse">
@@ -118,16 +107,16 @@ export default function ProductDetailPage({ params }) {
       <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4">
         <h2 className="text-xl font-bold text-red-600">Product not found!</h2>
         <Link
-          href="/haircare"
+          href="/bodycare"
           className="bg-black text-white px-4 py-2 rounded-lg text-sm font-bold"
         >
-          Return to haircare
+          Return to bodycare
         </Link>
       </div>
     );
   }
 
-  const totalPrice = (selectedVariant?.price || 0) * quantity;
+  const totalPrice = (currentVariant?.price || 0) * quantity;
 
   const allImages = [
     product.mainImage,
@@ -149,7 +138,7 @@ export default function ProductDetailPage({ params }) {
         <meta property="og:image" content={product.mainImage} />
         <meta
           property="og:url"
-          content={`https://ayriva.netlify.app/haircare/${product._id}`}
+          content={`https://ayriva.netlify.app/bodycare/${product._id}`}
         />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Ayriva" />
@@ -160,7 +149,7 @@ export default function ProductDetailPage({ params }) {
           {/* Main Display Image */}
           <div className="w-full h-72 md:h-96 rounded-xl overflow-hidden mb-4 bg-gray-100 relative">
             <img
-              src={activeImage || product.mainImage}
+              src={currentImage}
               alt={product.title}
               className="w-full h-full object-cover transition-all duration-300"
             />
@@ -174,7 +163,7 @@ export default function ProductDetailPage({ params }) {
                   type="button"
                   onClick={() => setActiveImage(imgUrl)}
                   className={`w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden border-2 transition shrink-0 ${
-                    activeImage === imgUrl
+                    currentImage === imgUrl
                       ? "border-amber-950 scale-105 shadow-md"
                       : "border-gray-200 opacity-70 hover:opacity-100"
                   }`}
@@ -232,7 +221,7 @@ export default function ProductDetailPage({ params }) {
                     type="button"
                     onClick={() => setSelectedVariant(v)}
                     className={`px-4 py-2 rounded-xl text-sm font-bold border transition ${
-                      selectedVariant?.size === v.size
+                      currentVariant?.size === v.size
                         ? "bg-amber-950 text-white border-amber-950"
                         : "bg-gray-100 text-gray-800 border-gray-300 hover:bg-amber-100"
                     }`}
@@ -345,7 +334,6 @@ export default function ProductDetailPage({ params }) {
         {showpopup && (
           <div className="fixed top-0 left-0 w-full h-full bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-[9999]">
             <div className="bg-white rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl relative border border-amber-200 transform transition-all animate-scaleUp">
-              {/* ❌ Cross Close Button */}
               <button
                 onClick={() => setSowpopup(false)}
                 className="absolute top-4 right-4 bg-gray-100 hover:bg-gray-200 text-gray-700 p-1.5 rounded-full transition cursor-pointer"
@@ -353,7 +341,6 @@ export default function ProductDetailPage({ params }) {
                 <X className="w-5 h-5" />
               </button>
 
-              {/* 🎬 Animated Confirmation GIF */}
               <div className="w-28 h-28 mx-auto mb-2 flex items-center justify-center">
                 <img
                   src="https://res.cloudinary.com/dfzaefrkt/image/upload/v1788590845/order_confirmed_uasggd.gif"
@@ -362,7 +349,6 @@ export default function ProductDetailPage({ params }) {
                 />
               </div>
 
-              {/* 🏷️ Headings & Message */}
               <h1 className="text-2xl font-black text-emerald-600 mb-1 flex items-center justify-center gap-2">
                 Order Confirmed!
               </h1>
@@ -373,7 +359,6 @@ export default function ProductDetailPage({ params }) {
                 We have received your order. Our team will contact you soon for confirmation.
               </p>
 
-              {/* 🔘 Close / Continue Button */}
               <button
                 onClick={() => setSowpopup(false)}
                 className="w-full bg-amber-950 hover:bg-amber-900 text-white font-bold py-3 rounded-xl transition shadow-md cursor-pointer text-sm"

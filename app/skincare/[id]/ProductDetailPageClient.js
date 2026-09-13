@@ -1,17 +1,20 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useState, use } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
+import useSWR from "swr"; // 🚀 SWR Import
 import ProductInfo from "@/app/components/Productinfo";
-import { X, CheckCircle2 } from "lucide-react";
+import { X } from "lucide-react";
 
-export default function ProductDetailPage({ params }) {
+// SWR-এর জন্য ফেচার ফাংশন
+const fetcher = (url) => fetch(url).then((res) => res.json());
+
+export default function ProductDetailPageClient({ params }) {
   const resolvedParams = use(params);
   const id = resolvedParams.id;
+
   const [showpopup, setSowpopup] = useState(false);
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState("");
@@ -24,28 +27,27 @@ export default function ProductDetailPage({ params }) {
   const [area, setArea] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    async function fetchProduct() {
-      try {
-        const res = await fetch(`/api/products/${id}`);
-        const data = await res.json();
-
-        if (data?.success && data?.product) {
-          setProduct(data.product);
-          setActiveImage(data.product.mainImage);
-          setSelectedVariant(
-            data.product.variants?.[0] || { size: "Default", price: 0 }
-          );
+  // 🚀 SWR Hook (ডাটা অটোমেটিক মেমোরিতে ক্যাশ রাখবে, বারবার লোডিং স্পিনার দেখাবে না)
+  const { data, error, isLoading } = useSWR(
+    id ? `/api/products/${id}` : null,
+    fetcher,
+    {
+      revalidateOnFocus: false, // ব্রাউজার ট্যাবে সুইচ করলে অতিরিক্ত ফেচ হবে না
+      dedupingInterval: 600000, // ১০ মিনিট পর্যন্ত ক্যাশ থাকবে (Instant Load)
+      onSuccess: (resData) => {
+        if (resData?.success && resData?.product) {
+          if (!activeImage) setActiveImage(resData.product.mainImage);
+          if (!selectedVariant) {
+            setSelectedVariant(
+              resData.product.variants?.[0] || { size: "Default", price: 0 }
+            );
+          }
         }
-      } catch (error) {
-        console.error("Fetch error:", error);
-      } finally {
-        setLoading(false);
-      }
+      },
     }
+  );
 
-    if (id) fetchProduct();
-  }, [id]);
+  const product = data?.product;
 
   // Order Submit Handler
   const handleOrderSubmit = async (e) => {
@@ -76,18 +78,18 @@ export default function ProductDetailPage({ params }) {
         body: JSON.stringify(orderData),
       });
 
-      const data = await res.json();
+      const resData = await res.json();
 
-      if (res.ok && data.success) {
+      if (res.ok && resData.success) {
         toast.success("Order Placed Successfully!");
         setName("");
         setPhone("");
         setDistrict("");
         setPoliceStation("");
         setArea("");
-        setSowpopup(true); // 🟢 সফল হলেই পপআপ দেখাবে
+        setSowpopup(true);
       } else {
-        toast.error(data.message || "Failed to place order!");
+        toast.error(resData.message || "Failed to place order!");
       }
     } catch (error) {
       toast.error("Error submitting order.");
@@ -103,7 +105,7 @@ export default function ProductDetailPage({ params }) {
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-amber-50 flex items-center justify-center">
         <h2 className="text-xl font-bold text-amber-950 animate-pulse">
@@ -113,7 +115,7 @@ export default function ProductDetailPage({ params }) {
     );
   }
 
-  if (!product) {
+  if (error || !product) {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4">
         <h2 className="text-xl font-bold text-red-600">Product not found!</h2>
@@ -128,6 +130,8 @@ export default function ProductDetailPage({ params }) {
   }
 
   const totalPrice = (selectedVariant?.price || 0) * quantity;
+  const currentActiveImage = activeImage || product.mainImage;
+  const currentVariant = selectedVariant || product.variants?.[0] || { size: "Default", price: 0 };
 
   const allImages = [
     product.mainImage,
@@ -135,255 +139,232 @@ export default function ProductDetailPage({ params }) {
   ].filter(Boolean);
 
   return (
-    <>
-      <head>
-        <title>{product.title} | Ayriva</title>
-        <meta property="og:title" content={product.title} />
-        <meta
-          property="og:description"
-          content={
-            product.description?.slice(0, 150) ||
-            "Authentic skincare product from Ayriva."
-          }
-        />
-        <meta property="og:image" content={product.mainImage} />
-        <meta
-          property="og:url"
-          content={`https://ayriva.netlify.app/skincare/${product._id}`}
-        />
-        <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="Ayriva" />
-      </head>
+    <div className="bg-amber-50 min-h-screen p-4 md:p-8 flex justify-center relative">
+      <div className="max-w-3xl w-full bg-white rounded-2xl p-4 md:p-6 shadow-xl border border-[#D4AF37]">
+        {/* Main Display Image */}
+        <div className="w-full h-72 md:h-96 rounded-xl overflow-hidden mb-4 bg-gray-100 relative">
+          <img
+            src={currentActiveImage}
+            alt={product.title}
+            className="w-full h-full object-cover transition-all duration-300"
+          />
+        </div>
 
-      <div className="bg-amber-50 min-h-screen p-4 md:p-8 flex justify-center relative">
-        <div className="max-w-3xl w-full bg-white rounded-2xl p-4 md:p-6 shadow-xl border border-[#D4AF37]">
-          {/* Main Display Image */}
-          <div className="w-full h-72 md:h-96 rounded-xl overflow-hidden mb-4 bg-gray-100 relative">
-            <img
-              src={activeImage || product.mainImage}
-              alt={product.title}
-              className="w-full h-full object-cover transition-all duration-300"
-            />
+        {allImages.length > 1 && (
+          <div className="flex gap-3 mb-6 overflow-x-auto pb-2">
+            {allImages.map((imgUrl, index) => (
+              <button
+                key={index}
+                type="button"
+                onClick={() => setActiveImage(imgUrl)}
+                className={`w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden border-2 transition shrink-0 ${
+                  currentActiveImage === imgUrl
+                    ? "border-amber-950 scale-105 shadow-md"
+                    : "border-gray-200 opacity-70 hover:opacity-100"
+                }`}
+              >
+                <img
+                  src={imgUrl}
+                  alt={`Thumbnail ${index + 1}`}
+                  className="w-full h-full object-cover"
+                />
+              </button>
+            ))}
           </div>
+        )}
 
-          {allImages.length > 1 && (
-            <div className="flex gap-3 mb-6 overflow-x-auto pb-2">
-              {allImages.map((imgUrl, index) => (
+        {/* Title & Copy Link */}
+        <div className="flex items-start justify-between gap-2 mb-3">
+          <h1 className="text-2xl md:text-3xl font-extrabold text-amber-950">
+            {product.title}
+          </h1>
+          <button
+            onClick={handleCopyLink}
+            type="button"
+            className="bg-amber-100 hover:bg-amber-200 text-amber-950 px-3 py-1.5 rounded-lg text-xs font-bold border border-amber-300 transition shrink-0 flex items-center gap-1 cursor-pointer"
+            title="Copy Product Link"
+          >
+            📋 Copy Link
+          </button>
+        </div>
+
+        <p className="text-gray-700 text-sm md:text-base leading-relaxed whitespace-pre-line mb-6">
+          {product.description}
+        </p>
+
+        {product.benefits && (
+          <div className="bg-amber-100/60 border border-amber-300 p-4 rounded-xl mb-6">
+            <h3 className="font-bold text-amber-950 text-sm mb-1">
+              Benefits:
+            </h3>
+            <p className="text-gray-800 text-xs md:text-sm whitespace-pre-line">
+              {product.benefits}
+            </p>
+          </div>
+        )}
+
+        {/* Size Selection */}
+        {product.variants && product.variants.length > 0 && (
+          <div className="mb-6">
+            <h3 className="font-bold text-gray-800 text-sm mb-2">
+              Select Available Size:
+            </h3>
+            <div className="flex flex-wrap gap-3">
+              {product.variants.map((v, idx) => (
                 <button
-                  key={index}
+                  key={idx}
                   type="button"
-                  onClick={() => setActiveImage(imgUrl)}
-                  className={`w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden border-2 transition shrink-0 ${
-                    activeImage === imgUrl
-                      ? "border-amber-950 scale-105 shadow-md"
-                      : "border-gray-200 opacity-70 hover:opacity-100"
+                  onClick={() => setSelectedVariant(v)}
+                  className={`px-4 py-2 rounded-xl text-sm font-bold border transition cursor-pointer ${
+                    currentVariant?.size === v.size
+                      ? "bg-amber-950 text-white border-amber-950"
+                      : "bg-gray-100 text-gray-800 border-gray-300 hover:bg-amber-100"
                   }`}
                 >
-                  <img
-                    src={imgUrl}
-                    alt={`Thumbnail ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
+                  {v.size} — ৳{v.price}
                 </button>
               ))}
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Title & Copy Link */}
-          <div className="flex items-start justify-between gap-2 mb-3">
-            <h1 className="text-2xl md:text-3xl font-extrabold text-amber-950">
-              {product.title}
-            </h1>
+        {/* Quantity & Price */}
+        <div className="flex items-center justify-between border-t border-b border-gray-200 py-4 mb-8">
+          <div className="flex items-center border border-gray-300 rounded-xl overflow-hidden">
             <button
-              onClick={handleCopyLink}
               type="button"
-              className="bg-amber-100 hover:bg-amber-200 text-amber-950 px-3 py-1.5 rounded-lg text-xs font-bold border border-amber-300 transition shrink-0 flex items-center gap-1"
-              title="Copy Product Link"
+              onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+              className="px-3 py-1 bg-gray-200 text-gray-800 font-bold hover:bg-gray-300 text-lg cursor-pointer"
             >
-              📋 Copy Link
+              -
+            </button>
+            <span className="px-4 font-bold text-black">{quantity}</span>
+            <button
+              type="button"
+              onClick={() => setQuantity((q) => q + 1)}
+              className="px-3 py-1 bg-gray-200 text-gray-800 font-bold hover:bg-gray-300 text-lg cursor-pointer"
+            >
+              +
             </button>
           </div>
 
-          <p className="text-gray-700 text-sm md:text-base leading-relaxed whitespace-pre-line mb-6">
-            {product.description}
-          </p>
-
-          {product.benefits && (
-            <div className="bg-amber-100/60 border border-amber-300 p-4 rounded-xl mb-6">
-              <h3 className="font-bold text-amber-950 text-sm mb-1">
-                Benefits:
-              </h3>
-              <p className="text-gray-800 text-xs md:text-sm whitespace-pre-line">
-                {product.benefits}
-              </p>
-            </div>
-          )}
-
-          {/* Size Selection */}
-          {product.variants && product.variants.length > 0 && (
-            <div className="mb-6">
-              <h3 className="font-bold text-gray-800 text-sm mb-2">
-                Select Available Size:
-              </h3>
-              <div className="flex flex-wrap gap-3">
-                {product.variants.map((v, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => setSelectedVariant(v)}
-                    className={`px-4 py-2 rounded-xl text-sm font-bold border transition ${
-                      selectedVariant?.size === v.size
-                        ? "bg-amber-950 text-white border-amber-950"
-                        : "bg-gray-100 text-gray-800 border-gray-300 hover:bg-amber-100"
-                    }`}
-                  >
-                    {v.size} — ৳{v.price}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Quantity & Price */}
-          <div className="flex items-center justify-between border-t border-b border-gray-200 py-4 mb-8">
-            <div className="flex items-center border border-gray-300 rounded-xl overflow-hidden">
-              <button
-                type="button"
-                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                className="px-3 py-1 bg-gray-200 text-gray-800 font-bold hover:bg-gray-300 text-lg"
-              >
-                -
-              </button>
-              <span className="px-4 font-bold text-black">{quantity}</span>
-              <button
-                type="button"
-                onClick={() => setQuantity((q) => q + 1)}
-                className="px-3 py-1 bg-gray-200 text-gray-800 font-bold hover:bg-gray-300 text-lg"
-              >
-                +
-              </button>
-            </div>
-
-            <div className="text-right">
-              <span className="text-xs text-gray-500 block">Total Price</span>
-              <span className="text-2xl font-black text-amber-950">
-                ৳{totalPrice}
-              </span>
-            </div>
-          </div>
-
-          <ProductInfo />
-
-          {/* Order Form */}
-          <div className="border border-amber-200 rounded-2xl p-4 md:p-6 bg-amber-50/50 mt-4">
-            <h2 className="text-xl font-bold text-amber-950 mb-4 text-center">
-              Checkout / Delivery Information
-            </h2>
-
-            <form onSubmit={handleOrderSubmit} className="flex flex-col gap-3">
-              <input
-                type="text"
-                placeholder="Your Full Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="p-3 border border-gray-300 rounded-xl text-black font-medium text-sm bg-white"
-                required
-              />
-
-              <input
-                type="tel"
-                placeholder="Mobile Phone Number"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="p-3 border border-gray-300 rounded-xl text-black font-medium text-sm bg-white"
-                required
-              />
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <input
-                  type="text"
-                  placeholder="District (জেলা)"
-                  value={district}
-                  onChange={(e) => setDistrict(e.target.value)}
-                  className="p-3 border border-gray-300 rounded-xl text-black font-medium text-sm bg-white"
-                  required
-                />
-
-                <input
-                  type="text"
-                  placeholder="Thana / Police Station (থানা)"
-                  value={policeStation}
-                  onChange={(e) => setPoliceStation(e.target.value)}
-                  className="p-3 border border-gray-300 rounded-xl text-black font-medium text-sm bg-white"
-                  required
-                />
-              </div>
-
-              <textarea
-                placeholder="Full Delivery Address / Area Details"
-                rows={2}
-                value={area}
-                onChange={(e) => setArea(e.target.value)}
-                className="p-3 border border-gray-300 rounded-xl text-black font-medium text-sm bg-white"
-                required
-              />
-
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full bg-yellow-700 text-black font-bold py-3.5 rounded-xl hover:bg-yellow-600 transition shadow-lg text-base cursor-pointer mt-2 disabled:opacity-50"
-              >
-                {submitting
-                  ? "Placing Order..."
-                  : `Confirm Order (৳${totalPrice})`}
-              </button>
-            </form>
+          <div className="text-right">
+            <span className="text-xs text-gray-500 block">Total Price</span>
+            <span className="text-2xl font-black text-amber-950">
+              ৳{totalPrice}
+            </span>
           </div>
         </div>
 
-        {/* 🏆 Responsive Success Popup Modal */}
-        {showpopup && (
-          <div className="fixed top-0 left-0 w-full h-full bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-[9999]">
-            <div className="bg-white rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl relative border border-amber-200 transform transition-all animate-scaleUp">
-              {/* ❌ Cross Close Button */}
-              <button
-                onClick={() => setSowpopup(false)}
-                className="absolute top-4 right-4 bg-gray-100 hover:bg-gray-200 text-gray-700 p-1.5 rounded-full transition cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
+        <ProductInfo />
 
-              {/* 🎬 Animated Confirmation GIF */}
-              <div className="w-28 h-28 mx-auto mb-2 flex items-center justify-center">
-                <img
-                  src="https://res.cloudinary.com/dfzaefrkt/image/upload/v1788590845/order_confirmed_uasggd.gif"
-                  alt="Order Confirmed Success"
-                  className="w-full h-full object-contain"
-                />
-              </div>
+        {/* Order Form */}
+        <div className="border border-amber-200 rounded-2xl p-4 md:p-6 bg-amber-50/50 mt-4">
+          <h2 className="text-xl font-bold text-amber-950 mb-4 text-center">
+            Checkout / Delivery Information
+          </h2>
 
-              {/* 🏷️ Headings & Message */}
-              <h1 className="text-2xl font-black text-emerald-600 mb-1 flex items-center justify-center gap-2">
-                Order Confirmed!
-              </h1>
-              <p className="text-gray-800 font-bold text-sm mb-2">
-                Thank you for shopping with Ayriva ❤️
-              </p>
-              <p className="text-xs text-gray-500 mb-6 leading-relaxed">
-                We have received your order. Our team will contact you soon for confirmation.
-              </p>
+          <form onSubmit={handleOrderSubmit} className="flex flex-col gap-3">
+            <input
+              type="text"
+              placeholder="Your Full Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="p-3 border border-gray-300 rounded-xl text-black font-medium text-sm bg-white"
+              required
+            />
 
-              {/* 🔘 Close / Continue Button */}
-              <button
-                onClick={() => setSowpopup(false)}
-                className="w-full bg-amber-950 hover:bg-amber-900 text-white font-bold py-3 rounded-xl transition shadow-md cursor-pointer text-sm"
-              >
-                Continue Shopping
-              </button>
+            <input
+              type="tel"
+              placeholder="Mobile Phone Number"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="p-3 border border-gray-300 rounded-xl text-black font-medium text-sm bg-white"
+              required
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <input
+                type="text"
+                placeholder="District (জেলা)"
+                value={district}
+                onChange={(e) => setDistrict(e.target.value)}
+                className="p-3 border border-gray-300 rounded-xl text-black font-medium text-sm bg-white"
+                required
+              />
+
+              <input
+                type="text"
+                placeholder="Thana / Police Station (থানা)"
+                value={policeStation}
+                onChange={(e) => setPoliceStation(e.target.value)}
+                className="p-3 border border-gray-300 rounded-xl text-black font-medium text-sm bg-white"
+                required
+              />
             </div>
-          </div>
-        )}
+
+            <textarea
+              placeholder="Full Delivery Address / Area Details"
+              rows={2}
+              value={area}
+              onChange={(e) => setArea(e.target.value)}
+              className="p-3 border border-gray-300 rounded-xl text-black font-medium text-sm bg-white"
+              required
+            />
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full bg-yellow-700 text-black font-bold py-3.5 rounded-xl hover:bg-yellow-600 transition shadow-lg text-base cursor-pointer mt-2 disabled:opacity-50"
+            >
+              {submitting
+                ? "Placing Order..."
+                : `Confirm Order (৳${totalPrice})`}
+            </button>
+          </form>
+        </div>
       </div>
-    </>
+
+      {/* 🏆 Responsive Success Popup Modal */}
+      {showpopup && (
+        <div className="fixed top-0 left-0 w-full h-full bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-[9999]">
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl relative border border-amber-200">
+            <button
+              type="button"
+              onClick={() => setSowpopup(false)}
+              className="absolute top-4 right-4 bg-gray-100 hover:bg-gray-200 text-gray-700 p-1.5 rounded-full transition cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="w-28 h-28 mx-auto mb-2 flex items-center justify-center">
+              <img
+                src="https://res.cloudinary.com/dfzaefrkt/image/upload/v1788590845/order_confirmed_uasggd.gif"
+                alt="Order Confirmed Success"
+                className="w-full h-full object-contain"
+              />
+            </div>
+
+            <h1 className="text-2xl font-black text-emerald-600 mb-1 flex items-center justify-center gap-2">
+              Order Confirmed!
+            </h1>
+            <p className="text-gray-800 font-bold text-sm mb-2">
+              Thank you for shopping with Ayriva ❤️
+            </p>
+            <p className="text-xs text-gray-500 mb-6 leading-relaxed">
+              We have received your order. Our team will contact you soon for confirmation.
+            </p>
+
+            <button
+              type="button"
+              onClick={() => setSowpopup(false)}
+              className="w-full bg-amber-950 hover:bg-amber-900 text-white font-bold py-3 rounded-xl transition shadow-md cursor-pointer text-sm"
+            >
+              Continue Shopping
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

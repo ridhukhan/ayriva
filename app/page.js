@@ -1,65 +1,41 @@
 "use client";
+
 import { CircleUserRound } from "lucide-react";
 import Link from "next/link";
 import HeroSlider from "./components/hero";
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import useSWR from "swr";
+
+// 🌐 SWR Global Fetcher Function
+const fetcher = (url) => fetch(url).then((res) => res.json());
 
 export default function Home() {
   const router = useRouter();
 
-  // User State
-  const [user, setUser] = useState(null);
+  // 🔑 ১. SWR দিয়ে ইউজার ডেটা ফেচিং
+  const { data: userData } = useSWR("/api/me", fetcher);
+  const user = userData?.customer || null;
 
-  // Category Products States
-  const [skincareProducts, setSkincareProducts] = useState([]);
-  const [bodycareProducts, setBodycareProducts] = useState([]);
-  const [haircareProducts, setHaircareProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // 📦 ২. SWR দিয়ে ক্যাটাগরি প্রোডাক্ট ফেচিং (Parallel Requests)
+  const { data: skinData, isLoading: skinLoading } = useSWR(
+    "/api/products?category=skincare&limit=4",
+    fetcher
+  );
+  const { data: bodyData, isLoading: bodyLoading } = useSWR(
+    "/api/products?category=bodycare&limit=4",
+    fetcher
+  );
+  const { data: hairData, isLoading: hairLoading } = useSWR(
+    "/api/products?category=haircare&limit=4",
+    fetcher
+  );
 
-  useEffect(() => {
-    // 1. Check User Context
-    async function checkUser() {
-      try {
-        const res = await fetch("/api/me");
-        const data = await res.json();
-        if (data.customer) {
-          setUser(data.customer);
-        }
-      } catch (error) {
-        console.error("failed to fetch user context");
-      }
-    }
+  const skincareProducts = skinData?.success ? skinData.products : [];
+  const bodycareProducts = bodyData?.success ? bodyData.products : [];
+  const haircareProducts = hairData?.success ? hairData.products : [];
 
-    // 2. Fetch Category Products from Backend
-    async function fetchAllCategoryProducts() {
-      try {
-        const [skinRes, bodyRes, hairRes] = await Promise.all([
-          fetch("/api/products?category=skincare&limit=4"),
-          fetch("/api/products?category=bodycare&limit=4"),
-          fetch("/api/products?category=haircare&limit=4"),
-        ]);
-
-        const skinData = await skinRes.json();
-        const bodyData = await bodyRes.json();
-        const hairData = await hairRes.json();
-
-        if (skinData.success) setSkincareProducts(skinData.products);
-        if (bodyData.success) setBodycareProducts(bodyData.products);
-        if (hairData.success) setHaircareProducts(hairData.products);
-      } catch (error) {
-        console.error("Failed to fetch home products:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    checkUser();
-    fetchAllCategoryProducts();
-  }, []);
-
-  // reusable product section grid renderer (1 line a 2 ta product)
-  const renderProductSection = (title, categoryPath, products) => {
+  // 🔄 Reusable Product Section Component
+  const renderProductSection = (title, categoryPath, products, isLoading) => {
     return (
       <section className="mt-8 px-4 max-w-5xl mx-auto">
         {/* Section Header */}
@@ -75,9 +51,9 @@ export default function Home() {
           </Link>
         </div>
 
-        {/* Product Grid: 1 line a 2 ta product (grid-cols-2) */}
-        {loading ? (
-          <p className="text-center py-6 font-bold text-amber-950">
+        {/* Product Grid */}
+        {isLoading ? (
+          <p className="text-center py-6 font-bold text-amber-950 animate-pulse">
             Loading {title}...
           </p>
         ) : products.length === 0 ? (
@@ -145,7 +121,11 @@ export default function Home() {
         <div>
           <Link href={user ? "/profile" : "/register"}>
             <button className="bg-slate-400 p-2 px-8 rounded-3xl shadow-[3px_7px_15px_#000] font-bold text-black">
-              {user ? user.username : <CircleUserRound className="w-6 h-6 text-black"/>}
+              {user ? (
+                user.username
+              ) : (
+                <CircleUserRound className="w-6 h-6 text-black" />
+              )}
             </button>
           </Link>
         </div>
@@ -157,13 +137,28 @@ export default function Home() {
       </section>
 
       {/* 1st Section: Skincare */}
-      {renderProductSection("Skincare Collection", "skincare", skincareProducts)}
+      {renderProductSection(
+        "Skincare Collection",
+        "skincare",
+        skincareProducts,
+        skinLoading
+      )}
 
       {/* 2nd Section: Bodycare */}
-      {renderProductSection("Bodycare Collection", "bodycare", bodycareProducts)}
+      {renderProductSection(
+        "Bodycare Collection",
+        "bodycare",
+        bodycareProducts,
+        bodyLoading
+      )}
 
       {/* 3rd Section: Haircare */}
-      {renderProductSection("Haircare Collection", "haircare", haircareProducts)}
+      {renderProductSection(
+        "Haircare Collection",
+        "haircare",
+        haircareProducts,
+        hairLoading
+      )}
     </div>
   );
 }

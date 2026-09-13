@@ -1,52 +1,36 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import useSWR, { mutate } from "swr";
+
+const fetcher = (url) => fetch(url).then((res) => res.json());
 
 export default function SkincarePage() {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false); // 🔑 অ্যাডমিন স্টেট
   const router = useRouter();
 
-  useEffect(() => {
-    // ১. ইউজার অ্যাডমিন কি না চেক করা
-    async function checkAdminStatus() {
-      try {
-        const res = await fetch("/api/me");
-        if (res.ok) {
-          const data = await res.json();
-          if (data?.customer?.role === "admin") {
-            setIsAdmin(true);
-          }
-        }
-      } catch (error) {
-        console.error("Admin check failed:", error);
-      }
+  // ১. ইউজার অ্যাডমিন কি না চেক করা (SWR)
+  const { data: meData } = useSWR("/api/me", fetcher, {
+    revalidateOnFocus: false,
+    dedupingInterval: 600000, // ১০ মিনিট ক্যাশ থাকবে
+  });
+  const isAdmin = meData?.customer?.role === "admin";
+
+  // ২. স্কিনকেয়ার প্রোডাক্ট লোড করা (SWR)
+  const { data: productsData, isLoading } = useSWR(
+    "/api/products?category=skincare",
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 600000, // ১০ মিনিট ক্যাশ থাকবে (Instant Loading)
     }
+  );
 
-    // ২. স্কিনকেয়ার প্রোডাক্ট লোড করা
-    async function fetchProducts() {
-      try {
-        const res = await fetch("/api/products?category=skincare");
-        const data = await res.json();
+  const products = Array.isArray(productsData?.products)
+    ? productsData.products
+    : [];
 
-        if (data?.success && Array.isArray(data?.products)) {
-          setProducts(data.products);
-        }
-      } catch (error) {
-        console.error("Failed to fetch skincare products:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    checkAdminStatus();
-    fetchProducts();
-  }, []);
-
-  // 🗑️ প্রোডাক্ট ডিলিট করার হ্যান্ডলার (শুধুমাত্র অ্যাডমিনদের জন্য)
+  // 🗑️ প্রোডাক্ট ডিলিট করার হ্যান্ডলার
   const handleDelete = async (e, id) => {
     e.preventDefault();
     e.stopPropagation();
@@ -60,7 +44,15 @@ export default function SkincarePage() {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        setProducts((prev) => prev.filter((item) => item._id !== id));
+        // SWR Cache আপডেট করে ডিলিট হওয়া আইটেম সরিয়ে ফেলা
+        mutate(
+          "/api/products?category=skincare",
+          {
+            ...productsData,
+            products: products.filter((item) => item._id !== id),
+          },
+          false
+        );
         alert("Product deleted successfully!");
       } else {
         alert(data.message || "Failed to delete product.");
@@ -84,7 +76,7 @@ export default function SkincarePage() {
         Skincare Collection
       </h1>
 
-      {loading ? (
+      {isLoading ? (
         <div className="flex justify-center items-center py-20">
           <h2 className="text-xl font-bold text-amber-950 animate-pulse">
             Loading Skincare Products...
@@ -122,7 +114,9 @@ export default function SkincarePage() {
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            router.push(`/secretdashboard/edit-product/${item._id}`);
+                            router.push(
+                              `/secretdashboard/edit-product/${item._id}`
+                            );
                           }}
                           className="bg-blue-600 text-white p-1.5 rounded-md hover:bg-blue-700 transition text-xs font-bold shadow-md"
                           title="Edit Product"

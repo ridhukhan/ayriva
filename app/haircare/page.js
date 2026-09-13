@@ -1,52 +1,29 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import useSWR from "swr";
+
+const fetcher = (url) => fetch(url).then((res) => res.json());
 
 export default function SkincarePage() {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false); // 🔑 অ্যাডমিন স্টেট
   const router = useRouter();
 
-  useEffect(() => {
-    // ১. ইউজার অ্যাডমিন কি না চেক করা
-    async function checkAdminStatus() {
-      try {
-        const res = await fetch("/api/me");
-        if (res.ok) {
-          const data = await res.json();
-          if (data?.customer?.role === "admin") {
-            setIsAdmin(true);
-          }
-        }
-      } catch (error) {
-        console.error("Admin check failed:", error);
-      }
-    }
+  // 🔑 ১. SWR দিয়ে অ্যাডমিন স্ট্যাটাস চেক
+  const { data: userData } = useSWR("/api/me", fetcher);
+  const isAdmin = userData?.customer?.role === "admin";
 
-    // ২. স্কিনকেয়ার প্রোডাক্ট লোড করা
-    async function fetchProducts() {
-      try {
-        const res = await fetch("/api/products?category=haircare");
-        const data = await res.json();
+  // 📦 ২. SWR দিয়ে স্কিনকেয়ার প্রোডাক্ট ফেচ
+  const { data: productsData, isLoading, mutate } = useSWR(
+    "/api/products?category=bodycare",
+    fetcher
+  );
 
-        if (data?.success && Array.isArray(data?.products)) {
-          setProducts(data.products);
-        }
-      } catch (error) {
-        console.error("Failed to fetch skincare products:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
+  const products = productsData?.success && Array.isArray(productsData?.products) 
+    ? productsData.products 
+    : [];
 
-    checkAdminStatus();
-    fetchProducts();
-  }, []);
-
-  // 🗑️ প্রোডাক্ট ডিলিট করার হ্যান্ডলার (শুধুমাত্র অ্যাডমিনদের জন্য)
+  // 🗑️ প্রোডাক্ট ডিলিট হ্যান্ডলার
   const handleDelete = async (e, id) => {
     e.preventDefault();
     e.stopPropagation();
@@ -60,7 +37,7 @@ export default function SkincarePage() {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        setProducts((prev) => prev.filter((item) => item._id !== id));
+        mutate(); // 🔄 ক্যাশ রিফ্রেশ
         alert("Product deleted successfully!");
       } else {
         alert(data.message || "Failed to delete product.");
@@ -81,13 +58,13 @@ export default function SkincarePage() {
       </Link>
 
       <h1 className="text-3xl font-bold text-center mb-8 text-black mt-6 md:mt-0">
-        haircare Collection
+        Bodycare Collection
       </h1>
 
-      {loading ? (
+      {isLoading ? (
         <div className="flex justify-center items-center py-20">
           <h2 className="text-xl font-bold text-amber-950 animate-pulse">
-            Loading haircare Products...
+            Loading bodycare Products...
           </h2>
         </div>
       ) : products.length === 0 ? (
@@ -102,7 +79,7 @@ export default function SkincarePage() {
             return (
               <Link
                 key={item._id}
-                href={`/haircare/${item._id}`}
+                href={`/bodycare/${item._id}`}
                 className="border border-[#D4AF37] shadow-black shadow-lg rounded-xl p-4 flex flex-col justify-between bg-white cursor-pointer block hover:scale-[1.01] transition-transform relative group"
               >
                 <div>
@@ -114,7 +91,7 @@ export default function SkincarePage() {
                       className="w-full h-full object-cover"
                     />
 
-                    {/* 🔐 শুধুমাত্র অ্যাডমিন হলেই এডিট ও ডিলিট বাটন দেখাবে */}
+                    {/* 🔐 অ্যাডমিনদের জন্য এডিট ও ডিলিট বাটন */}
                     {isAdmin && (
                       <div className="absolute top-2 right-2 flex gap-2 z-10">
                         <button

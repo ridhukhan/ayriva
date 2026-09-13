@@ -1,52 +1,34 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import useSWR from "swr"; // 🚀 SWR Import
+
+const fetcher = (url) => fetch(url).then((res) => res.json());
 
 export default function SkincarePage() {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false); // 🔑 অ্যাডমিন স্টেট
   const router = useRouter();
 
-  useEffect(() => {
-    // ১. ইউজার অ্যাডমিন কি না চেক করা
-    async function checkAdminStatus() {
-      try {
-        const res = await fetch("/api/me");
-        if (res.ok) {
-          const data = await res.json();
-          if (data?.customer?.role === "admin") {
-            setIsAdmin(true);
-          }
-        }
-      } catch (error) {
-        console.error("Admin check failed:", error);
-      }
+  // 🚀 ১. SWR দিয়ে প্রোডাক্ট ডাটা ফেচিং
+  const { data: productData, error: productError, isLoading: productsLoading, mutate } = useSWR(
+    "/api/products?category=bodycare",
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 300000, // ৫ মিনিট ক্যাশ থাকবে
     }
+  );
 
-    // ২. স্কিনকেয়ার প্রোডাক্ট লোড করা
-    async function fetchProducts() {
-      try {
-        const res = await fetch("/api/products?category=bodycare");
-        const data = await res.json();
+  // 🚀 ২. SWR দিয়ে অ্যাডমিন স্ট্যাটাস ফেচিং
+  const { data: userData } = useSWR("/api/me", fetcher, {
+    revalidateOnFocus: false,
+  });
 
-        if (data?.success && Array.isArray(data?.products)) {
-          setProducts(data.products);
-        }
-      } catch (error) {
-        console.error("Failed to fetch skincare products:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
+  const products = productData?.success && Array.isArray(productData?.products) ? productData.products : [];
+  const isAdmin = userData?.customer?.role === "admin";
 
-    checkAdminStatus();
-    fetchProducts();
-  }, []);
-
-  // 🗑️ প্রোডাক্ট ডিলিট করার হ্যান্ডলার (শুধুমাত্র অ্যাডমিনদের জন্য)
+  // 🗑️ প্রোডাক্ট ডিলিট করার হ্যান্ডলার (Optimistic UI Update সহ)
   const handleDelete = async (e, id) => {
     e.preventDefault();
     e.stopPropagation();
@@ -54,20 +36,31 @@ export default function SkincarePage() {
     if (!confirm("Are you sure you want to delete this product?")) return;
 
     try {
+      // SWR Cache থেকে সাথে সাথে রিমুভ করে UI আপডেট করা
+      mutate(
+        (prev) => ({
+          ...prev,
+          products: prev.products.filter((item) => item._id !== id),
+        }),
+        false
+      );
+
       const res = await fetch(`/api/products/${id}`, {
         method: "DELETE",
       });
       const data = await res.json();
 
       if (res.ok && data.success) {
-        setProducts((prev) => prev.filter((item) => item._id !== id));
         alert("Product deleted successfully!");
+        mutate(); // ব্যাকএন্ড থেকে নতুন ডাটা দিয়ে রি-সিঙ্ক
       } else {
         alert(data.message || "Failed to delete product.");
+        mutate(); // ব্যর্থ হলে পুরানো ডাটা ফেরত আনা
       }
     } catch (error) {
       console.error("Delete error:", error);
       alert("Error deleting product.");
+      mutate();
     }
   };
 
@@ -84,7 +77,7 @@ export default function SkincarePage() {
         Bodycare Collection
       </h1>
 
-      {loading ? (
+      {productsLoading ? (
         <div className="flex justify-center items-center py-20">
           <h2 className="text-xl font-bold text-amber-950 animate-pulse">
             Loading bodycare Products...
@@ -114,7 +107,7 @@ export default function SkincarePage() {
                       className="w-full h-full object-cover"
                     />
 
-                    {/* 🔐 শুধুমাত্র অ্যাডমিন হলেই এডিট ও ডিলিট বাটন দেখাবে */}
+                    {/* 🔐 অ্যাডমিনদের জন্য এডিট ও ডিলিট বাটন */}
                     {isAdmin && (
                       <div className="absolute top-2 right-2 flex gap-2 z-10">
                         <button
@@ -124,7 +117,7 @@ export default function SkincarePage() {
                             e.stopPropagation();
                             router.push(`/secretdashboard/edit-product/${item._id}`);
                           }}
-                          className="bg-blue-600 text-white p-1.5 rounded-md hover:bg-blue-700 transition text-xs font-bold shadow-md"
+                          className="bg-blue-600 text-white p-1.5 rounded-md hover:bg-blue-700 transition text-xs font-bold shadow-md cursor-pointer"
                           title="Edit Product"
                         >
                           ✏️ Edit
@@ -133,7 +126,7 @@ export default function SkincarePage() {
                         <button
                           type="button"
                           onClick={(e) => handleDelete(e, item._id)}
-                          className="bg-red-600 text-white p-1.5 rounded-md hover:bg-red-700 transition text-xs font-bold shadow-md"
+                          className="bg-red-600 text-white p-1.5 rounded-md hover:bg-red-700 transition text-xs font-bold shadow-md cursor-pointer"
                           title="Delete Product"
                         >
                           🗑️ Delete
