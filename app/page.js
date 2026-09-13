@@ -54,7 +54,7 @@ export default function Home() {
         {/* Product Grid */}
         {isLoading ? (
           <p className="text-center py-6 font-bold text-amber-950 animate-pulse">
-            Loading {title}...
+            Loading {title}.....
           </p>
         ) : products.length === 0 ? (
           <p className="text-gray-500 text-sm italic">
