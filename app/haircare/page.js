@@ -15,7 +15,7 @@ export default function SkincarePage() {
 
   // 📦 ২. SWR দিয়ে স্কিনকেয়ার প্রোডাক্ট ফেচ
   const { data: productsData, isLoading, mutate } = useSWR(
-    "/api/products?category=bodycare",
+    "/api/products?category=haircare",
     fetcher
   );
 
@@ -58,13 +58,13 @@ export default function SkincarePage() {
       </Link>
 
       <h1 className="text-3xl font-bold text-center mb-8 text-black mt-6 md:mt-0">
-        Bodycare Collection
+        Haircare Collection
       </h1>
 
       {isLoading ? (
         <div className="flex justify-center items-center py-20">
           <h2 className="text-xl font-bold text-amber-950 animate-pulse">
-            Loading bodycare Products...
+            Loading haircare Products...
           </h2>
         </div>
       ) : products.length === 0 ? (
@@ -79,7 +79,7 @@ export default function SkincarePage() {
             return (
               <Link
                 key={item._id}
-                href={`/bodycare/${item._id}`}
+                href={`/haircare/${item._id}`}
                 className="border border-[#D4AF37] shadow-black shadow-lg rounded-xl p-4 flex flex-col justify-between bg-white cursor-pointer block hover:scale-[1.01] transition-transform relative group"
               >
                 <div>
