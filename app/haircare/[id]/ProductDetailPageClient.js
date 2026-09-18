@@ -437,13 +437,15 @@ export default function ProductDetailPage({ params }) {
                 We have received your order. Our team will contact you soon for
                 confirmation.
               </p>
-
+ <Link  href={"/"}>
+            
               <button
                 onClick={() => setSowpopup(false)}
                 className="w-full bg-amber-950 hover:bg-amber-900 text-white font-bold py-3 rounded-xl transition shadow-md cursor-pointer text-sm"
               >
                 Continue Shopping
               </button>
+            </Link>
             </div>
           </div>
         )}
