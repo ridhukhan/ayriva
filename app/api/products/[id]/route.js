@@ -16,7 +16,6 @@ export async function GET(request, { params }) {
       );
     }
 
-    // ⚡ ক্যাশিং হেডার: ৬০ সেকেন্ড ক্যাশ থাকবে, ডাটাবেজে চাপ পড়বে না
     return NextResponse.json(
       { success: true, product },
       {

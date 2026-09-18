@@ -26,14 +26,28 @@ export default function ProductDetailPage({ params }) {
   const [area, setArea] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  // 🚀 SWR দিয়ে সিঙ্গেল প্রোডাক্ট ফেচিং
+  // 🚀 SWR দিয়ে বর্তমান প্রোডাক্ট ফেচ
   const { data, isLoading } = useSWR(
     id ? `/api/products/${id}` : null,
     fetcher
   );
 
   const product = data?.product;
-  const currentVariant = selectedVariant || product?.variants?.[0] || { size: "Default", price: 0 };
+
+  // 📦 SWR দিয়ে ক্যাটাগরির সব প্রোডাক্ট ফেচ
+  const { data: relatedData } = useSWR(
+    product?.category ? `/api/products?category=${product.category}` : null,
+    fetcher
+  );
+
+  // বর্তমান প্রোডাক্টটি বাদ দিয়ে বাকি প্রোডাক্টগুলো নেওয়া
+  const relatedProducts =
+    relatedData?.success && Array.isArray(relatedData?.products)
+      ? relatedData.products.filter((item) => item._id !== product?._id)
+      : [];
+
+  const currentVariant =
+    selectedVariant || product?.variants?.[0] || { size: "Default", price: 0 };
   const currentImage = activeImage || product?.mainImage;
 
   // Order Submit Handler
@@ -106,7 +120,6 @@ export default function ProductDetailPage({ params }) {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4">
         <h2 className="text-xl font-bold text-red-600">Product not found!</h2>
-        
       </div>
     );
   }
@@ -133,18 +146,22 @@ export default function ProductDetailPage({ params }) {
         <meta property="og:image" content={product.mainImage} />
         <meta
           property="og:url"
-          content={`https://ayriva.netlify.app/bodycare/${product._id}`}
+          content={`https://ayriva.netlify.app/${product.category || "haircare"}/${product._id}`}
         />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Ayriva" />
       </head>
 
       <div className="bg-amber-50 min-h-screen p-4 md:p-8 flex justify-center relative">
-        <Link href={"/haircare"} className="absolute top-4 left-4 z-10">
-        <span className="bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md hover:bg-gray-800 transition">
-          ← Go Back
-        </span>
-      </Link>
+        <Link
+          href={`/${product.category || "haircare"}`}
+          className="absolute top-4 left-4 z-10"
+        >
+          <span className="bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md hover:bg-gray-800 transition">
+            ← Go Back
+          </span>
+        </Link>
+
         <div className="max-w-3xl w-full bg-white rounded-2xl p-4 md:p-6 shadow-xl border border-[#D4AF37]">
           {/* Main Display Image */}
           <div className="w-full h-72 md:h-96 rounded-xl overflow-hidden mb-4 bg-gray-100 relative">
@@ -264,7 +281,7 @@ export default function ProductDetailPage({ params }) {
           <ProductInfo />
 
           {/* Order Form */}
-          <div className="border border-amber-200 rounded-2xl p-4 md:p-6 bg-amber-50/50 mt-4">
+          <div className="border border-amber-200 rounded-2xl p-4 md:p-6 bg-amber-50/50 mt-4 mb-8">
             <h2 className="text-xl font-bold text-amber-950 mb-4 text-center">
               Checkout / Delivery Information
             </h2>
@@ -328,9 +345,70 @@ export default function ProductDetailPage({ params }) {
               </button>
             </form>
           </div>
+
+          {/* 🛍️ More Products (Horizontal Single Line Overflow) */}
+          <div className="border-t border-amber-200 pt-6 mt-6">
+            <h2 className="text-xl font-bold text-amber-950 mb-4 border-b border-[#D4AF37] pb-2">
+              More {product?.category ? product.category.charAt(0).toUpperCase() + product.category.slice(1) : 'Related'} Products
+            </h2>
+
+            {relatedProducts.length > 0 ? (
+              <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-amber-300">
+                {relatedProducts.map((item) => {
+                  const itemPrice = item.variants?.[0]?.price || 0;
+                  const itemCategory = item.category || "haircare";
+
+                  return (
+                    <div
+                      key={item._id}
+                      className="min-w-[220px] max-w-[240px] bg-white border border-[#D4AF37] rounded-2xl p-4 shadow-md flex-shrink-0 flex flex-col justify-between hover:shadow-lg transition-all"
+                    >
+                      <div>
+                        {/* Image */}
+                        <div className="w-full h-40 rounded-xl overflow-hidden bg-gray-100 mb-3 relative">
+                          <img
+                            src={item.mainImage}
+                            alt={item.title}
+                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+
+                        {/* Title */}
+                        <h3 className="text-sm font-bold text-amber-950 line-clamp-1 mb-1">
+                          {item.title}
+                        </h3>
+
+                        {/* Description / Info */}
+                        <p className="text-xs text-gray-600 line-clamp-2 mb-2">
+                          {item.description}
+                        </p>
+
+                        {/* Price */}
+                        <p className="text-base font-extrabold text-amber-950 mb-3">
+                          ৳{itemPrice}
+                        </p>
+                      </div>
+
+                      {/* Buy Now Button */}
+                      <Link
+                        href={`/${itemCategory}/${item._id}`}
+                        className="w-full bg-yellow-700 hover:bg-yellow-600 text-black font-bold py-2.5 rounded-xl text-xs transition text-center block"
+                      >
+                        Buy Now
+                      </Link>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-xs text-gray-500 italic">
+                No other products found.
+              </p>
+            )}
+          </div>
         </div>
 
-        {/* 🏆 Responsive Success Popup Modal */}
+        {/* 🏆 Success Popup Modal */}
         {showpopup && (
           <div className="fixed top-0 left-0 w-full h-full bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-[9999]">
             <div className="bg-white rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl relative border border-amber-200 transform transition-all animate-scaleUp">
@@ -356,7 +434,8 @@ export default function ProductDetailPage({ params }) {
                 Thank you for shopping with Ayriva ❤️
               </p>
               <p className="text-xs text-gray-500 mb-6 leading-relaxed">
-                We have received your order. Our team will contact you soon for confirmation.
+                We have received your order. Our team will contact you soon for
+                confirmation.
               </p>
 
               <button

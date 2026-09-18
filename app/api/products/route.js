@@ -26,7 +26,6 @@ export async function GET(req) {
       query.category = category;
     }
 
-    // sort({ createdAt: -1 }) দেওয়া হয়েছে যেন লেটেস্ট আপলোড করা ৪টি প্রোডাক্ট প্রথমে আসে
     const products = await Product.find(query).sort({ createdAt: -1 }).limit(limit);
 
     return NextResponse.json({ success: true, products }, { status: 200 });
