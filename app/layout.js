@@ -27,7 +27,7 @@ export default function RootLayout({ children }) {
     >
       <head>
 <Script
-          id="fb-pixel"
+          id="1073286328895666"
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `
@@ -39,7 +39,7 @@ export default function RootLayout({ children }) {
               t.src=v;s=b.getElementsByTagName(e)[0];
               s.parentNode.insertBefore(t,s)}(window, document,'script',
               'https://connect.facebook.net/en_US/fbevents.js');
-              fbq('init', '2165035070713231');
+              fbq('init', '1073286328895666');
               fbq('track', 'PageView');
             `,
           }}
