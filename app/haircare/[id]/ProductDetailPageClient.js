@@ -51,54 +51,66 @@ export default function ProductDetailPage({ params }) {
   const currentImage = activeImage || product?.mainImage;
 
   // Order Submit Handler
-  const handleOrderSubmit = async (e) => {
-    e.preventDefault();
-    if (!name || !phone || !district || !policeStation || !area) {
-      return toast.error("Please fill in all address details!");
-    }
+  // Order Submit Handler
+const handleOrderSubmit = async (e) => {
+  e.preventDefault();
+  if (!name || !phone || !district || !policeStation || !area) {
+    return toast.error("Please fill in all address details!");
+  }
 
-    setSubmitting(true);
-    try {
-      const orderData = {
-        productId: product._id,
-        productTitle: product.title,
-        selectedSize: currentVariant?.size,
-        unitPrice: currentVariant?.price,
-        quantity,
-        totalPrice: (currentVariant?.price || 0) * quantity,
-        name,
-        phone,
-        district,
-        policeStation,
-        area,
-      };
+  setSubmitting(true);
+  try {
+    const orderData = {
+      productId: product._id,
+      productTitle: product.title,
+      selectedSize: currentVariant?.size,
+      unitPrice: currentVariant?.price,
+      quantity,
+      totalPrice: (currentVariant?.price || 0) * quantity,
+      name,
+      phone,
+      district,
+      policeStation,
+      area,
+    };
 
-      const res = await fetch("/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(orderData),
-      });
+    const res = await fetch("/api/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(orderData),
+    });
 
-      const resData = await res.json();
+    const resData = await res.json();
 
-      if (res.ok && resData.success) {
-        toast.success("Order Placed Successfully!");
-        setName("");
-        setPhone("");
-        setDistrict("");
-        setPoliceStation("");
-        setArea("");
-        setSowpopup(true);
-      } else {
-        toast.error(resData.message || "Failed to place order!");
+    if (res.ok && resData.success) {
+      // 🎯 Meta Pixel - Purchase Event Trigger
+      if (typeof window !== "undefined" && window.fbq) {
+        window.fbq("track", "Purchase", {
+          value: totalPrice,           // অর্ডারের মোট টাকার পরিমাণ
+          currency: "BDT",             // কারেন্সি
+          content_ids: [product._id],  // প্রোডাক্টের আইডি
+          content_type: "product",
+          content_name: product.title,
+          num_items: quantity,
+        });
       }
-    } catch (error) {
-      toast.error("Error submitting order.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
+      toast.success("Order Placed Successfully!");
+      setName("");
+      setPhone("");
+      setDistrict("");
+      setPoliceStation("");
+      setArea("");
+      setSowpopup(true);
+    } else {
+      toast.error(resData.message || "Failed to place order!");
+    }
+  } catch (error) {
+    toast.error("Error submitting order.");
+  } finally {
+    setSubmitting(false);
+  }
+};
   const handleCopyLink = () => {
     if (typeof window !== "undefined") {
       navigator.clipboard.writeText(window.location.href);
