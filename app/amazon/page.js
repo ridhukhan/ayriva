@@ -6,7 +6,7 @@ import useSWR, { mutate } from "swr";
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
-export default function SkincarePage() {
+export default function Amazon() {
   const router = useRouter();
 
   
@@ -70,7 +70,7 @@ export default function SkincarePage() {
       {isLoading ? (
         <div className="flex justify-center items-center py-20">
           <h2 className="text-xl font-bold text-amber-950 animate-pulse">
-            Loading Skincare Products...
+            Loading Amazon Products...
           </h2>
         </div>
       ) : products.length === 0 ? (
