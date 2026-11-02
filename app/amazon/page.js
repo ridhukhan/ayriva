@@ -9,14 +9,18 @@ const fetcher = (url) => fetch(url).then((res) => res.json());
 export default function Amazon() {
   const router = useRouter();
 
-  
+  const { data: meData } = useSWR("/api/me", fetcher, {
+    revalidateOnFocus: false,
+    dedupingInterval: 600000, 
+  });
+  const isAdmin = meData?.customer?.role === "admin";
 
   const { data: productsData, isLoading } = useSWR(
-    "/api/products?category=amazon",
+    "/api/products?category=skincare",
     fetcher,
     {
       revalidateOnFocus: false,
-      dedupingInterval: 600000, 
+      dedupingInterval: 600000,
     }
   );
 
@@ -57,20 +61,16 @@ export default function Amazon() {
 
   return (
     <div className="bg-white min-h-screen p-6 md:p-12 relative">
-      <Link href={"/"} className="absolute top-4 left-4 z-10">
-        <span className="bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md hover:bg-gray-800 transition">
-          ← Go Back
-        </span>
-      </Link>
+     
 
       <h1 className="text-3xl font-bold text-center mb-8 text-black mt-6 md:mt-0">
-        Skincare Collection
+        Amazon Collection
       </h1>
 
       {isLoading ? (
         <div className="flex justify-center items-center py-20">
           <h2 className="text-xl font-bold text-amber-950 animate-pulse">
-            Loading Amazon Products...
+            Loading Products...
           </h2>
         </div>
       ) : products.length === 0 ? (
@@ -80,6 +80,7 @@ export default function Amazon() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
           {products.map((item) => {
+            const defaultPrice = item.variants?.[0]?.price || 0;
 
             return (
               <Link
@@ -88,6 +89,7 @@ export default function Amazon() {
                 className="border border-[#D4AF37] shadow-black shadow-lg rounded-xl p-4 flex flex-col justify-between bg-white cursor-pointer block hover:scale-[1.01] transition-transform relative group"
               >
                 <div>
+                  {/* ১. মেইন ইমেজ */}
                   <div className="w-full h-48 mb-4 rounded-lg overflow-hidden bg-gray-100 relative">
                     <img
                       src={item.mainImage}
@@ -95,6 +97,7 @@ export default function Amazon() {
                       className="w-full h-full object-cover"
                     />
 
+                    {/* 🔐 শুধুমাত্র অ্যাডমিন হলেই এডিট ও ডিলিট বাটন দেখাবে */}
                     {isAdmin && (
                       <div className="absolute top-2 right-2 flex gap-2 z-10">
                         <button
@@ -124,10 +127,12 @@ export default function Amazon() {
                     )}
                   </div>
 
-                
+                  
+
+                  
                 </div>
 
-              
+               
               </Link>
             );
           })}
