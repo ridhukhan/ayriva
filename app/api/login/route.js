@@ -46,27 +46,29 @@ const token = jwt.sign(
     tokenData,secretKey,{expiresIn:"3d"}
 )
 
-const response = NextResponse.json({
-    success:true,
-    message:"login successfuly",
-    customer:{
-        id:foundUser._id,
-        username:foundUser.username,
-        email:foundUser.email,
-        role:foundUser.role
-    }
+const response = NextResponse.json(
+  {
+    success: true,
+    message: "login successfully",
+    token: token, // <--- এই লাইনটি যোগ করুন
+    customer: {
+      id: foundUser._id,
+      username: foundUser.username,
+      email: foundUser.email,
+      role: foundUser.role,
+    },
+  },
+  { status: 200 }
+);
 
+response.cookies.set("token", token, {
+  httpOnly: true,
+  secure: true,
+  sameSite: "strict",
+  maxAge: 3 * 24 * 60 * 60,
+  path: "/",
+});
 
-},{status:200})
-response.cookies.set("token",token,{
-    httpOnly:true,
-    secure:true,
-sameSite:"strict",
-maxAge:3*24*60*60,
-path:"/",
-
-},
-)
 return response;
 } catch (error) {
     console.error("login server problem")
