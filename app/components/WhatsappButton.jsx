@@ -1,11 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-
+import { usePathname } from "next/navigation";
 export default function WhatsAppButton() {
   const phoneNumber = "8801621379527";
   const [whatsappUrl, setWhatsappUrl] = useState(`https://wa.me/${phoneNumber}`);
+const pathname = usePathname();
 
+  // 🚀 যদি ইউজার /amazon বা /amazon/id পেজে থাকে, তবে বাটন রেন্ডার হবে না
+  if (pathname.startsWith("/amazon")) {
+    return null;
+  }
   useEffect(() => {
     // বর্তমান পেজের URL এবং কাস্টম মেসেজ তৈরি
     const currentUrl = window.location.href;
