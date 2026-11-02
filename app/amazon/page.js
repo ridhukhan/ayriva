@@ -16,7 +16,7 @@ export default function Amazon() {
   const isAdmin = meData?.customer?.role === "admin";
 
   const { data: productsData, isLoading } = useSWR(
-    "/api/products?category=skincare",
+    "/api/products?category=amazon",
     fetcher,
     {
       revalidateOnFocus: false,
