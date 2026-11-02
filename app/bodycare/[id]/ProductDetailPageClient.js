@@ -18,7 +18,6 @@ export default function ProductDetailPage({ params }) {
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState("");
 
-  // Order Form States
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [district, setDistrict] = useState("");

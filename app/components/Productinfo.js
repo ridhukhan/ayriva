@@ -3,10 +3,7 @@ import { TicketPlus, Truck, ShieldCheck, Undo2 } from "lucide-react";
 export default function ProductInfo() {
   return (
     <div className="w-full bg-fuchsia-100 p-4 rounded-2xl border border-fuchsia-200 my-4">
-      {/* 
-        - grid-cols-2: মোবাইলে ও ল্যাপটপে ২ লাইনে ২টা করে দেখাবে (মোট ৪টি)
-        - h-auto: হাইট ফ্লেক্সিবল থাকবে, ফলে নিচের ফর্মের ওপর উঠে যাবে না
-      */}
+     
       <div className="grid grid-cols-2 gap-3 text-left">
         {/* ১. Delivery Info */}
         <div className="bg-white p-3 rounded-xl shadow-xs border border-fuchsia-50 flex flex-col justify-between">

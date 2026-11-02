@@ -8,6 +8,7 @@ const productSchema = new mongoose.Schema(
     title: { type: String, required: true },
     description: { type: String, required: true },
     benefits: { type: String },
+    affiliateLink: { type: String, default: "" },
     variants: [
       {
         size: { type: String, required: true },

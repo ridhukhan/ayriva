@@ -30,7 +30,6 @@ export default function SkincarePage() {
     ? productsData.products
     : [];
 
-  // 🗑️ প্রোডাক্ট ডিলিট করার হ্যান্ডলার
   const handleDelete = async (e, id) => {
     e.preventDefault();
     e.stopPropagation();
@@ -44,7 +43,6 @@ export default function SkincarePage() {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        // SWR Cache আপডেট করে ডিলিট হওয়া আইটেম সরিয়ে ফেলা
         mutate(
           "/api/products?category=skincare",
           {
@@ -65,7 +63,6 @@ export default function SkincarePage() {
 
   return (
     <div className="bg-white min-h-screen p-6 md:p-12 relative">
-      {/* Go Back Button */}
       <Link href={"/"} className="absolute top-4 left-4 z-10">
         <span className="bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md hover:bg-gray-800 transition">
           ← Go Back
