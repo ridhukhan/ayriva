@@ -75,7 +75,19 @@ export default function Profile() {
           >
             Dashboard
           </button>
+          
         )}
+
+          {user?.role?.toLowerCase() === "admin" && (
+          <button
+            onClick={() => router.push("/amazon")}
+            className="bg-blue-500 hover:bg-amber-900 text-white text-lg font-bold px-6 py-2 rounded-xl transition cursor-pointer shadow-md"
+          >
+            Amazon
+          </button>
+          
+        )}
+
 
         <button
           disabled={loggingOut}
