@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-
+import Link from "next/link";
 export default function Profile() {
   const [user, setUser] = useState(null);
   const router = useRouter();
@@ -79,12 +79,11 @@ export default function Profile() {
         )}
 
           {user?.role?.toLowerCase() === "admin" && (
-          <button
-            onClick={() => router.push("/amazon")}
+          <Link href={"/amazon"}
             className="bg-blue-500 hover:bg-amber-900 text-white text-lg font-bold px-6 py-2 rounded-xl transition cursor-pointer shadow-md"
           >
             Amazon
-          </button>
+          </Link>
           
         )}
 
