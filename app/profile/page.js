@@ -79,7 +79,7 @@ export default function Profile() {
         )}
 
           {user?.role?.toLowerCase() === "admin" && (
-          <Link href={"/amazon"}
+          <Link href={"/app/amazon/page.js"}
             className="bg-blue-500 hover:bg-amber-900 text-white text-lg font-bold px-6 py-2 rounded-xl transition cursor-pointer shadow-md"
           >
             Amazon
