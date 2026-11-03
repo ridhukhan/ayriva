@@ -70,6 +70,8 @@ export default function Profile() {
         {/* 🔐 Admin Role Check (Case-insensitive) */}
         {user?.role?.toLowerCase() === "admin" && (
           <button
+            onClick={() => router.push("/secretdashboard")}
+
             className="bg-amber-800 hover:bg-amber-900 text-white text-lg font-bold px-6 py-2 rounded-xl transition cursor-pointer shadow-md"
           >
             Dashboard
@@ -79,7 +81,7 @@ export default function Profile() {
 
           {user?.role?.toLowerCase() === "admin" && (
           <button 
-            onClick={() => router.replace("/amazon")}
+            onClick={() => router.refresh("/amazon")}
 
             className="bg-blue-500 hover:bg-amber-900 text-white text-lg font-bold px-6 py-2 rounded-xl transition cursor-pointer shadow-md"
           >
