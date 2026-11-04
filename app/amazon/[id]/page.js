@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, use } from "react";
+import { toast } from "sonner";
 
 export default function AmazonProductDetailPage({ params }) {
   const resolvedParams = use(params);
@@ -21,6 +22,13 @@ export default function AmazonProductDetailPage({ params }) {
       .catch((error) => console.error("Error fetching product:", error));
   }, [id]);
 
+
+  const handleCopyLink = () => {
+    if (typeof window !== "undefined") {
+      navigator.clipboard.writeText(window.location.href);
+      toast.success("Product link copied to clipboard!");
+    }
+  };
   const redirectUrl = product?.affiliateLink || product?.amazonLink || "#";
 
   return (
@@ -29,7 +37,14 @@ export default function AmazonProductDetailPage({ params }) {
       <p className="text-center text-xs text-white/90 mb-4 max-w-md">
         As an Amazon Associate I earn from qualifying purchases.
       </p>
-
+ <button
+              onClick={handleCopyLink}
+              type="button"
+              className="bg-amber-100 hover:bg-amber-200 text-amber-950 px-3 py-1.5 rounded-lg text-xs font-bold border border-amber-300 transition shrink-0 flex items-center gap-1"
+              title="Copy Product Link"
+            >
+              📋 Copy Link
+            </button>
       {/* Container */}
       <div className="max-w-md w-full bg-white rounded-3xl p-4 shadow-2xl border border-slate-200 flex flex-col items-center">
         {/* Product Main Image */}
